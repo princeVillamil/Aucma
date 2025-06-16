@@ -1,4 +1,3 @@
-
 import {
   Input,
   Checkbox,
@@ -6,14 +5,64 @@ import {
   Typography,
 } from "@material-tailwind/react"; 
 import { Link } from "react-router-dom";
+import { useState } from "react";
+
+
+import { Navigate, useNavigate } from 'react-router-dom'
+import { useAuth } from '../firebase/authContext.jsx'
+import { doCreateUserWithEmailAndPassword, doSignInWithGoogle } from '../firebase/auth.js'
 
 
 import AucmaLogo from '../assets/imgs/AucmaLogo.png'
 
 
 function RegisterPage() {
+  const navigate = useNavigate();
+  const { userLoggedIn } = useAuth();
+
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [isRegistering, setIsRegistering] = useState(false)
+  //add later
+  const [errorMessage, setErrorMessage] = useState('')
+    const onSubmit = async (e) => {
+      console.log("working")
+    e.preventDefault();
+    const passwordRegex = /^(?=.*\d).{6,}$/; // Ensures at least 6 chars & one digit
+    if (!passwordRegex.test(password)) {
+      setErrorMessage("Password must be at least 6 characters long and contain at least one number.");
+      return;
+    }
+    // if (password !== confirmPassword) {
+    //   setErrorMessage("Passwords do not match.");
+    //   return;
+    // }
+    if (!isRegistering) {
+      setIsRegistering(true);
+      try {
+        await doCreateUserWithEmailAndPassword(email, password);
+        navigate("/"); 
+      } catch (error) {
+        setErrorMessage(error.message); 
+        setIsRegistering(false); 
+      }
+    }
+  };
+
+  // const onGoogleSignIn = (e)=>{
+  //   e.preventDefault()
+  //   if(!isRegistering){
+  //     setIsRegistering(true)
+  //     doSignInWithGoogle().catch(err=>{
+  //       setIsRegistering(false)
+  //       console.log(err)
+  //     })
+  //   }
+  // }
+  
   return (
     <section className="h-screen flex">
+      {userLoggedIn && (<Navigate to={'/'} replace={true}/>)}
         <div className="w-2/5 hidden lg:block items-center justify-center">
             <img
             src={AucmaLogo}
@@ -25,17 +74,42 @@ function RegisterPage() {
           <Typography variant="h2" className="font-bold mb-4">Join Us Today</Typography>
           <Typography variant="paragraph" color="blue-gray" className="text-lg font-normal">Enter your email and password to register.</Typography>
         </div>
-        <form className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2">
+        <form  onSubmit={onSubmit} className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2">
           <div className="mb-1 flex flex-col gap-6">
             <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">
               Your email
             </Typography>
             <Input
+              value={email}
+              onChange={(e) => { setEmail(e.target.value) }}
+              required
               size="lg"
               placeholder="name@mail.com"
               className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
               labelProps={{
                 className: "before:content-none after:content-none",
+              }}
+              
+            />
+            <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">
+              Password
+            </Typography>
+            <Input
+              disabled={isRegistering} 
+              value={password} 
+              onChange={(e) => { setPassword(e.target.value) }} 
+              minLength="6" 
+              pattern="^(?=.*\d).{6,}$" 
+              title="Password must be at least 6 characters long and contain at least one number." 
+              name="password" 
+              id="password"
+              required  
+              type="password"
+              size="lg"
+              placeholder="••••••••"
+              className="!border-t-blue-gray-200 focus:!border-t-gray-900"
+              labelProps={{
+                lassName: "before:content-none after:content-none",
               }}
             />
           </div>
@@ -57,7 +131,10 @@ function RegisterPage() {
             }
             containerProps={{ className: "-ml-2.5" }}
           />
-          <Button className="mt-6" fullWidth>
+          {errorMessage && (
+              <span className='text-red-600 font-bold'>{isRegistering ? "redirecting" : errorMessage}</span>
+          )}
+          <Button type="submit" disabled={isRegistering} id='registerBTN' typ className="mt-6" fullWidth>
             Register Now
           </Button>
 
@@ -92,4 +169,3 @@ function RegisterPage() {
 }
 
 export default RegisterPage
-

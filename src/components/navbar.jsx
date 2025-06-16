@@ -1,67 +1,12 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import {
-  Navbar,
-  MobileNav,
-  Typography,
-  Button,
-  IconButton,
-} from "@material-tailwind/react";
-import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+
+import { doSignOut } from "../firebase/auth.js";
 
 
-function navbar() {
-  // const [openNav, setOpenNav] = React.useState(false);
 
-  // React.useEffect(() => {
-  //   const handleResize = () => {
-  //     if (window.innerWidth >= 960) setOpenNav(false);
-  //   };
+function navbar({ currentUser = null }) {
 
-  //   window.addEventListener("resize", handleResize);
-  //   return () => window.removeEventListener("resize", handleResize);
-  // }, []);
-
-  // const navList = (
-  //   <ul className="mb-4 mt-2 flex flex-col gap-2 text-inherit lg:mb-0 lg:mt-0 lg:flex-row lg:items-center lg:gap-6">
-  //     {routes.map(({ name, path, icon, href, target }) => (
-  //       <Typography
-  //         key={name}
-  //         as="li"
-  //         variant="small"
-  //         color="inherit"
-  //         className="capitalize"
-  //       >
-  //         {href ? (
-  //           <a
-  //             href={href}
-  //             target={target}
-  //             rel="noopener noreferrer"
-  //             className="flex items-center gap-1 p-1 font-bold"
-  //           >
-  //             {icon &&
-  //               React.createElement(icon, {
-  //                 className: "w-[18px] h-[18px] opacity-75 mr-1",
-  //               })}
-  //             {name}
-  //           </a>
-  //         ) : (
-  //           <Link
-  //             to={path}
-  //             target={target}
-  //             className="flex items-center gap-1 p-1 font-bold"
-  //           >
-  //             {icon &&
-  //               React.createElement(icon, {
-  //                 className: "w-[18px] h-[18px] opacity-75 mr-1",
-  //               })}
-  //             {name}
-  //           </Link>
-  //         )}
-  //       </Typography>
-  //     ))}
-  //   </ul>
-  // );
 
   return (
     <header className="p-4 dark:bg-gray-100 dark:text-gray-800">
@@ -75,21 +20,34 @@ function navbar() {
           </a>
           <ul className="items-stretch hidden space-x-3 lg:flex">
             <Link to="/" className="flex">
-              <a rel="noopener noreferrer" href="#" className="flex items-center px-4 -mb-1 border-b-2 dark:border-">Link</a>
+              <a rel="noopener noreferrer" href="#" className="flex items-center px-4 -mb-1 border-b-2 dark:border- hover:border-gray-900">Home</a>
             </Link>
             <Link to="/" className="flex">
-              <a rel="noopener noreferrer" href="#" className="flex items-center px-4 -mb-1 border-b-2 dark:border- dark:text-blue-gray-500 dark:border-gray-900">Link</a>
+              {/* <a rel="noopener noreferrer" href="#" className="flex items-center px-4 -mb-1 border-b-2 dark:border- dark:text-blue-gray-500 dark:border-gray-900">Link</a> */}
+              <a rel="noopener noreferrer" href="#" className="flex items-center px-4 -mb-1 border-b-2 dark:border- hover:border-gray-900">Link</a>
             </Link>
             <Link to="/" className="flex">
-              <a rel="noopener noreferrer" href="#" className="flex items-center px-4 -mb-1 border-b-2 dark:border-">Link</a>
+              <a rel="noopener noreferrer" href="#" className="flex items-center px-4 -mb-1 border-b-2 dark:border- hover:border-gray-900">Link</a>
             </Link>
-            <Link to="/" className="flex">
-              <a rel="noopener noreferrer" href="#" className="flex items-center px-4 -mb-1 border-b-2 dark:border-">Link</a>
-            </Link>
+            {
+              (currentUser!=null)
+              ?
+                <Link to="/admin" className="flex">
+                  <a rel="noopener noreferrer" href="#" className="flex items-center px-4 -mb-1 border-b-2 dark:border- hover:border-gray-900">Admin</a>
+                </Link>
+              :
+              <></>
+            }
           </ul>
         </div>
         <div className="items-center flex-shrink-0 hidden lg:flex">
-          <Link to="/login" className="px-8 py-3 font-semibold rounded dark:bg-gray-900 dark:text-gray-50">Log in</Link>
+          {
+            (currentUser!=null)
+            ?
+            <button onClick={() => { doSignOut().then(() => { useNavigate('/login') }) }} type="button" className="cursor-pointer block w-full px-8 py-3 font-semibold rounded dark:bg-gray-900 dark:text-gray-50" role="menuitem">Sign out</button>
+            :
+            <Link to="/login" className="px-8 py-3 font-semibold rounded dark:bg-gray-900 dark:text-gray-50">Log in</Link>
+          }
         </div>
         <button className="p-4 lg:hidden">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-6 h-6 dark:text-gray-800">

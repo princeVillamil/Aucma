@@ -13,6 +13,8 @@ import {
 
 import { FingerPrintIcon } from "@heroicons/react/24/solid";
 
+import { useAuth } from '../firebase/authContext.jsx'
+
 import { featuresData } from '../assets/data/featuresData'
 import { contactData } from '../assets/data/contactData.js'
 
@@ -24,38 +26,11 @@ import LoginPage from './LoginPage.jsx'
 
 
 function HomePage() {
-    const routes = [
-        {
-            name: "home",
-            path: "/home",
-            element: <LoginPage />,
-        },
-        {
-            name: "profile",
-            path: "/profile",
-            element: <LoginPage />,
-        },
-        {
-            name: "Sign In",
-            path: "/sign-in",
-            element: <LoginPage />,
-        },
-        {
-            name: "Sign Up",
-            path: "/sign-up",
-            element: <LoginPage />,
-        },
-        {
-            name: "Docs",
-            href: "https://www.material-tailwind.com/docs/react/installation",
-            target: "_blank",
-            element: "",
-        },
-    ];
+  const { currentUser } = useAuth();
 
   return (
     <>
-    <Navbar/>
+    <Navbar currentUser={currentUser}/>
     <div className="relative flex h-screen content-center items-center justify-center pt-16 pb-32">
         <div className="absolute top-0 h-full w-full bg-[url('/img/background-3.png')] bg-cover bg-center" />
         <div className="absolute top-0 h-full w-full bg-black/60 bg-cover bg-center" />

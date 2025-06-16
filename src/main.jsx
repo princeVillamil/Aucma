@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './firebase/authContext.jsx'
 import 'leaflet/dist/leaflet.css';
 import './index.css'
 
@@ -17,6 +18,7 @@ import { ThemeProvider } from "@material-tailwind/react";
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
+    <AuthProvider>
     <ThemeProvider>
       <Router>
         <Routes>
@@ -29,5 +31,6 @@ createRoot(document.getElementById('root')).render(
         </Routes>
       </Router>
     </ThemeProvider>
+    </AuthProvider>
   </StrictMode>,
 )

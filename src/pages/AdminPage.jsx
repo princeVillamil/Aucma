@@ -5,6 +5,8 @@ import 'leaflet/dist/leaflet.css';
 
 import { placeHolderClients } from '../assets/data/placeHolderClients.js'
 
+import { useAuth } from '../firebase/authContext.jsx'
+import { Navigate, useNavigate } from 'react-router-dom'
 
 
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -22,6 +24,8 @@ import LocationSearch from '../components/locationSearch';
 
 
 function AdminPage() {
+    const { userLoggedIn } = useAuth();
+
       const [clients, setClients] = useState(placeHolderClients);
 
     const [clientName, setClientName] = useState('');
