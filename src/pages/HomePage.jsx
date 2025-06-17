@@ -17,6 +17,7 @@ import { useAuth } from '../firebase/authContext.jsx'
 
 import { featuresData } from '../assets/data/featuresData'
 import { contactData } from '../assets/data/contactData.js'
+import AucmaFreezer from '../assets/imgs/AucmaFreezer.jpg'
 
 import FeatureCard from '../components/featuresCard.jsx'
 import Footer from '../components/footer.jsx'
@@ -103,8 +104,8 @@ function HomePage() {
                     <CardHeader floated={false} className="relative h-56">
                     <img
                         alt="Card Image"
-                        src="/img/teamwork.png"
-                        className="h-full w-full"
+                        src={AucmaFreezer}
+                        className="h-full w-full object-cover"
                     />
                     </CardHeader>
                     <CardBody>

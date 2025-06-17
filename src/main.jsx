@@ -11,6 +11,7 @@ import LoginPage from './pages/LoginPage.jsx'
 import RegisterPage from './pages/RegisterPage.jsx';
 import HomePage from './pages/HomePage.jsx';
 import AdminPage from './pages/AdminPage.jsx';
+import TestimonialPage from './pages/TestimonialPage.jsx'
 
 import TestPage from './pages/TestPage.jsx'
 
@@ -25,6 +26,7 @@ createRoot(document.getElementById('root')).render(
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/" element={<HomePage />} />
+          <Route path="/testimonials" element={<TestimonialPage />} />
 
           {/* Might need to add only Admin access */}
           <Route path="/admin" element={<AdminPage />} />
