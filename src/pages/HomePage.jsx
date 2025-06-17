@@ -43,12 +43,10 @@ function HomePage() {
                 color="white"
                 className="mb-6 font-black"
               >
-                Your story starts with us.
+                About Aucma Service Center
               </Typography>
               <Typography variant="lead" color="white" className="opacity-80">
-                This is a simple example of a Landing Page you can build using
-                Material Tailwind. It features multiple components based on the
-                Tailwind CSS and Material Design by Google.
+                At Aucma Service Center, we specialize in expert maintenance and reliable repair services to keep your Aucma fridge running at its best.
               </Typography>
             </div>
           </div>
@@ -97,7 +95,7 @@ function HomePage() {
                     faster. You can change the text and images and you're good to
                     go. Just make sure you enable them first via JavaScript.
                 </Typography>
-                <Button variant="filled">read more</Button>
+                {/* <Button variant="filled">read more</Button> */}
                 </div>
                 <div className="mx-auto mt-24 flex w-full justify-center px-4 md:w-4/12 lg:mt-0">
                 <Card className="shadow-lg border shadow-gray-500/10 rounded-lg">

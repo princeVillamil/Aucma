@@ -37,16 +37,16 @@ function LoginPage() {
       }
     }
   }
-//   const onGoogleSignIn = (e)=>{
-//     e.preventDefault()
-//     if(!isSigningIn){
-//       setIsSigningIn(true)
-//       doSignInWithGoogle().catch(error=>{
-//         setErrorMessage(error.message); 
-//         setIsSigningIn(false)
-//       })
-//     }
-//   }
+  const onGoogleSignIn = (e)=>{
+    e.preventDefault()
+    if(!isSigningIn){
+      setIsSigningIn(true)
+      doSignInWithGoogle().catch(error=>{
+        setErrorMessage(error.message); 
+        setIsSigningIn(false)
+      })
+    }
+  }
   return (
     <section className="h-screen flex">
         {userLoggedIn && (<Navigate to={'/'} replace={true} />)}
@@ -142,6 +142,7 @@ function LoginPage() {
 
           <div className="space-y-4 mt-8">
             <Button
+              onClick={(e)=>{onGoogleSignIn(e)}} 
               size="lg"
               color="white"
               className="flex items-center gap-2 justify-center shadow-md text-gray-900"
