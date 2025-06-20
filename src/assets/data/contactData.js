@@ -6,22 +6,22 @@ import {
 
 export const contactData = [
   {
-    title: "Excelent Services",
+    title: "Reliable Servicing",
     icon: BriefcaseIcon,
     description:
-      "Some quick example text to build on the card title and make up the bulk of the card's content.",
+      "Certified technicians ensure your Aucma equipment is maintained to the highest standards, reducing downtime and boosting efficiency.",
   },
   {
-    title: "Grow Your Market",
+    title: "Streamlined Coordination",
     icon: ChartBarIcon,
     description:
-      "Some quick example text to build on the card title and make up the bulk of the card's content.",
+      "Easily submit and track service requests across warehouse sites with real-time updates and centralized logs.",
   },
   {
-    title: "Launch Time",
+    title: "Fast Response Times",
     icon: PlayIcon,
     description:
-      "Some quick example text to build on the card title and make up the bulk of the card's content.",
+      "Urgent requests are prioritized and addressed quickly to keep your warehouse operations running without interruption.",
   },
 ];
 

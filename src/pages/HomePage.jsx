@@ -25,6 +25,7 @@ import Navbar from '../components/navbar.jsx'
 
 import LoginPage from './LoginPage.jsx'
 
+import BGImg from '../assets/imgs/bg.jpg'
 
 function HomePage() {
   const { currentUser } = useAuth();
@@ -33,7 +34,7 @@ function HomePage() {
     <>
     <Navbar currentUser={currentUser}/>
     <div className="relative flex h-screen content-center items-center justify-center pt-16 pb-32">
-        <div className="absolute top-0 h-full w-full bg-[url('/img/background-3.png')] bg-cover bg-center" />
+        <div style={{ backgroundImage: `url(${BGImg})` }} className="absolute top-0 h-full w-full bg-cover bg-center" />
         <div className="absolute top-0 h-full w-full bg-black/60 bg-cover bg-center" />
         <div className="max-w-8xl container relative mx-auto">
           <div className="flex flex-wrap items-center">
@@ -83,17 +84,13 @@ function HomePage() {
                     className="mb-3 font-bold"
                     color="blue-gray"
                 >
-                    Working with us is a pleasure
+                    Trusted Support for Aucma Operations
                 </Typography>
                 <Typography className="mb-8 font-normal text-blue-gray-500">
-                    Don't let your uses guess by attaching tooltips and popoves to
-                    any element. Just make sure you enable them first via
-                    JavaScript.
+                    Aucma Service Center is the official support hub for all Aucma Warehouse operations. We ensure every unit runs efficiently with timely, expert servicing—exclusively for Aucma Warehouse use.
                     <br />
                     <br />
-                    The kit comes with three pre-built pages to help you get started
-                    faster. You can change the text and images and you're good to
-                    go. Just make sure you enable them first via JavaScript.
+                    This platform simplifies service requests, tracking, and management across warehouse sites, helping reduce downtime and maintain high operational standards. From refrigeration systems to inventory equipment, we deliver fast, accurate, and transparent support tailored to Aucma’s standards.
                 </Typography>
                 {/* <Button variant="filled">read more</Button> */}
                 </div>
@@ -113,12 +110,10 @@ function HomePage() {
                         color="blue-gray"
                         className="mb-3 mt-2 font-bold"
                     >
-                        Top Notch Services
+                        Reliable Cold Storage Solutions
                     </Typography>
                     <Typography className="font-normal text-blue-gray-500">
-                        The Arctic Ocean freezes every winter and much of the
-                        sea-ice then thaws every summer, and that process will
-                        continue whatever happens.
+                        Aucma fridges are designed for optimal performance and durability, keeping your products consistently cold even in demanding environments. Built with advanced cooling technology, they ensure energy efficiency, reliability, and long-term value for your business.
                     </Typography>
                     </CardBody>
                 </Card>
@@ -132,12 +127,10 @@ function HomePage() {
             <div className="mx-auto w-full px-4 text-center lg:w-6/12">
                 <Typography variant="lead" className="font-semibold">Co-Working</Typography>
                 <Typography variant="h2" color="blue-gray" className="my-3">
-                    Build something
+                  Keep Your Operations Running
                 </Typography>
                 <Typography variant="lead" className="text-blue-gray-500">
-                    Put the potentially record low maximum sea ice extent tihs year down
-                    to low ice. According to the National Oceanic and Atmospheric
-                    Administration, Ted, Scambos.
+                  The Aucma Service Center helps ensure that your warehouse equipment—especially refrigeration units—receives fast, reliable maintenance to minimize downtime and maximize efficiency.
                 </Typography>
             </div>
           <div className="mx-auto mt-20 mb-48 grid max-w-5xl grid-cols-1 gap-16 md:grid-cols-2 lg:grid-cols-3">

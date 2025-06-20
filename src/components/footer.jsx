@@ -3,9 +3,9 @@ import { Typography, IconButton } from "@material-tailwind/react";
 const year = new Date().getFullYear();
 
 export function Footer() {
-  const title = "Material Tailwind";
+  const title = "Aucma Service Center";
   const description =
-    "Easy to use React components for Tailwind CSS and Material Design.";
+    "Reliable warehouse servicing. Certified. Fast. On-site.";
 
   const socials = [
     {
@@ -71,15 +71,7 @@ export function Footer() {
 
   const copyright = (
     <>
-      Copyright © {year} Material Tailwind by{" "}
-      <a
-        href="https://www.creative-tim.com?ref=mtk"
-        target="_blank"
-        className="text-blue-gray-500 transition-colors hover:text-blue-500"
-      >
-        Creative Tim
-      </a>
-      .
+      Copyright © {year} Aucma Service Center.
     </>
   );
 
