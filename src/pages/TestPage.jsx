@@ -1,12 +1,22 @@
-import { useState } from 'react'
-import { MapContainer, TileLayer, Marker, Circle, Popup } from 'react-leaflet';
+import { useState, useEffect  } from 'react'
+import { MapContainer, TileLayer, Marker, Circle, Popup, useMap  } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+
+import { useAuth } from '../firebase/authContext.jsx'
+import { placeHolderClients } from '../assets/data/placeHolderClients.js'
+
 
 
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+import LocationSearch from '../components/locationSearch';
+import ClientList from '../components/clientList.jsx';
+import AllClientView from '../components/allClientView.jsx';
+
+import Navbar from '../components/navbar.jsx'
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -18,116 +28,324 @@ L.Icon.Default.mergeOptions({
 
 function TestPage() {
     const [address, setAddress] = useState('');
-    const position = [14.5995, 120.9842];
+    // const position = [14.5995, 120.9842];
+
+    const { currentUser } = useAuth();
+
+    
+    const [clients, setClients] = useState(placeHolderClients);
+    
+    const [clientName, setClientName] = useState('');
+    const [date, setDate] = useState('');
+    const [description, setDescription] = useState('');
+    const [position, setPosition] = useState({ lat: 14.5995, lng: 120.9842 });
+    
+    const handleAddClient = (newClient) => {
+        const { name, date, description, position} = newClient;
+        let addClient =   {
+            name: name,
+            address: "6789 Ayala Ave, Makati City",
+            date: date,
+            lat: position.lat,
+            lng: position.lng,
+            description: description,
+        }
+    
+        const isValid =
+            name.trim() !== "" &&
+            date.trim() !== "" &&
+            description.trim() !== "" &&
+            position.lat !== 14.5995 &&
+            position.lng !== 120.9842;
+    
+        if (!isValid) {
+            alert("All fields must be filled before adding the client.");
+            return;
+        }
+    
+        setClients((prevClients) => [...prevClients, addClient]);
+        setPosition({ lat: 14.5995, lng: 120.9842 })
+    };
+    
+    
+        console.log(placeHolderClients)
+    
+        const FlyToLocation = ({ position }) => {
+        const map = useMap();
+    
+        useEffect(() => {
+        if (position) {
+            map.flyTo(position, map.getZoom());
+            }
+        }, [position, map]);
+    
+        return null;
+    };
+    
 
   return (
     
     <>
-    <section className="px-5 py-10 dark:bg-gray-100 dark:text-gray-800">
+    <Navbar currentUser={currentUser}/>
+    <section style={{ height: "calc(100vh - 96px)" }} className="px-5 py-10 dark:text-gray-800">
     <div className="container grid grid-cols-12 mx-auto gap-y-6 md:gap-10">
         
         {/* Left Sidebar */}
-        <div className="flex flex-col justify-between col-span-12 py-2 space-y-8 md:space-y-16 md:col-span-3">
-        <div className="flex flex-col space-y-8 md:space-y-12">
-            {[
-            "Donec sed elit quis odio mollis dignissim eget et nulla.",
-            "Ut fermentum nunc quis ipsum laoreet condimentum.",
-            "Nunc nec ipsum lobortis, pulvinar neque sed."
-            ].map((text, i) => (
-            <div key={i} className="flex flex-col space-y-2">
-                <h3 className="flex items-center space-x-2 dark:text-gray-600">
-                <span className="flex-shrink-0 w-2 h-2 uppercase rounded-full dark:bg-violet-600" />
-                <span className="text-xs font-bold tracking-wider uppercase">Exclusive</span>
-                </h3>
-                <a href="#" className="font-serif hover:underline">{text}</a>
-                <p className="text-xs dark:text-gray-600">
-                {["47 minutes", "2 hours", "4 hours"][i]} ago by{" "}
-                <a href="#" className="hover:underline dark:text-violet-600">Leroy Jenkins</a>
-                </p>
-            </div>
-            ))}
-        </div>
-        <div className="flex flex-col w-full space-y-2">
-            <div className="flex w-full h-1 bg-opacity-10 dark:bg-violet-600">
-            <div className="w-1/2 h-full dark:bg-violet-600" />
-            </div>
-            <a href="#" className="flex items-center justify-between w-full">
-            <span className="text-xs font-bold tracking-wider uppercase">See more exclusives</span>
-            <svg
-                viewBox="0 0 24 24"
-                strokeWidth="2.5"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="w-4 text-violet-600"
+{/* className="relative flex col-span-6 dark:bg-gray-500 bg-center bg-no-repeat bg-cover xl:col-span-6 lg:col-span-5 md:col-span-12 min-h-96" */}
+
+    <form className="space-y-8 md:space-y-3 flex flex-col col-span-12 py-2 xl:col-span-6 lg:col-span-6 md:col-span-12">
+    <div>
+        <label htmlFor="clientName" className="block text-sm font-medium text-gray-700 mb-1">
+        Client Name
+        </label>
+        <input
+        type="text"
+        id="clientName"
+        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-sm"
+        placeholder="Full Name"
+        value={clientName}
+        // onChange={(e) => setClientName(e.target.value)}
+        />
+    </div>
+
+    <div>
+        <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
+        Enter Address
+        </label>
+        <LocationSearch onSelectLocation={(setPosition)} />
+    </div>
+
+    <div>
+        <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
+        Date
+        </label>
+        <input
+        type="date"
+        id="date"
+        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-sm"
+        value={date}
+        // onChange={(e) => setDate(e.target.value)}
+        />
+    </div>
+
+    <div>
+        <label htmlFor="time" className="block text-sm font-medium text-gray-700 mb-1">
+        Time
+        </label>
+        <input
+        type="time"
+        id="time"
+        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-sm"
+        // value={time}
+        // onChange={(e) => setTime(e.target.value)}
+        />
+    </div>
+
+    <div className="flex flex-col md:flex-row gap-4">
+        <div className="w-full md:w-1/2">
+            <label htmlFor="technician" className="block text-sm font-medium text-gray-700 mb-1">
+            Tech
+            </label>
+            <select
+            id="technician"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-sm"
             >
-                <line x1="5" y1="12" x2="19" y2="12" />
-                <polyline points="12 5 19 12 12 19" />
-            </svg>
-            </a>
+            <option value="">Select Technician</option>
+            <option value="tech-1">Technician 1</option>
+            <option value="tech-2">Technician 2</option>
+            </select>
         </div>
+
+        <div className="w-full md:w-1/2">
+            <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+            Status
+            </label>
+            <select
+            id="status"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-sm"
+            >
+            <option value="">Select Status</option>
+            <option value="pending">Pending</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+            </select>
         </div>
+    </div>
+
+
+    <div>
+        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+        Description
+        </label>
+        <textarea
+        id="description"
+        rows="3"
+        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-sm resize-none"
+        placeholder="Enter additional notes or description..."
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        />
+    </div>
+
+    <div>
+        <button
+        type="button"
+        className="w-full px-4 py-2 text-white bg-gray-900 hover:bg-orange-600 rounded-md text-sm font-semibold shadow"
+        onClick={() =>
+            handleAddClient({
+            name: clientName,
+            date,
+            description,
+            position
+            })}
+        >
+        Add
+        </button>
+    </div>
+    </form>
+
+        {/* <form className="space-y-8 md:space-y-3 flex flex-col col-span-12 py-2 xl:col-span-6 lg:col-span-6 md:col-span-12">
+            <div>
+                <label htmlFor="clientName" className="block text-sm font-medium text-gray-700 mb-1">
+                Client Name
+                </label>
+                <input
+                type="text"
+                id="clientName"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-sm"
+                placeholder="Full Name"
+                value={clientName}
+                onChange={(e) => setClientName(e.target.value)}
+                />
+            </div>
+            <div>
+                <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
+                Enter Address
+                </label>
+                <LocationSearch onSelectLocation={(setPosition)} />
+            </div>
+            <div>
+                <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
+                Date
+                </label>
+                <input
+                type="date"
+                id="date"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-sm"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                />
+            </div>
+            <div>
+                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                Description
+                </label>
+                <textarea
+                id="description"
+                rows="3"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-sm resize-none"
+                placeholder="Enter additional notes or description..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                />
+            </div>
+            <div className="">
+                <button
+                type="button"
+                className="w-full px-4 py-2 text-white bg-gray-900 hover:bg-orange-600 rounded-md text-sm font-semibold shadow"
+                onClick={() =>
+                    handleAddClient({
+                    name: clientName,
+                    date,
+                    description,
+                    position
+                    })}
+                >
+                Add
+                </button>
+            </div>
+        </form> */}
 
         {/* Map Section */}
         <div
-        className="relative flex col-span-12 dark:bg-gray-500 bg-center bg-no-repeat bg-cover xl:col-span-6 lg:col-span-5 md:col-span-9 min-h-96"
-        style={{ backgroundImage: "url('https://source.unsplash.com/random/239x319')" }}
+        className="relative flex bg-center bg-no-repeat bg-cover col-span-12 py-2 xl:col-span-6 lg:col-span-6 md:col-span-12 min-h-96"
+        // style={{ backgroundImage: "url('https://source.unsplash.com/random/239x319')" }}
         >
-        <span className="absolute px-1 pb-2 text-xs font-bold uppercase border-b-2 left-6 top-6 dark:text-gray-800 dark:border-violet-600">Paris, France</span>
+            
         <div className="w-full h-full">
-            <MapContainer center={position} zoom={13} style={{ height: '100%', width: '100%' }}>
+             {/* center={position} zoom={13} style={{ height: '100%', width: '100%' }} */}
+        <MapContainer center={position} zoom={50} style={{ height: '100%', width: '100%' }}>
+            <FlyToLocation position={position} />
             <TileLayer
-                url="https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=S5NBfX61EcPeciB2gyPg"
-                attribution='&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a>'
+            url="https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=S5NBfX61EcPeciB2gyPg"
+            attribution='&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a>'
             />
-            <Marker position={position}>
-                <Popup>This is your pinpoint</Popup>
+            {clients.map(client=>(
+            <>
+            <Marker position={{ lat: client.lat, lng: client.lng }}>
+                <Popup>
+                    <div className="p-2 text-sm #374151">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-1">{client.name}</h2>
+                    <p className="text-gray-700"><strong>Address:</strong> {client.address}</p>
+                    <p className="text-gray-700"><strong>Date:</strong> {client.date}</p>
+                    <p className="text-gray-700"><strong>Description:</strong> {client.description}</p>
+                    </div>
+                </Popup>
             </Marker>
+
             <Circle
-                center={position}
-                radius={250}
+                center={{ lat: client.lat, lng: client.lng }}
+                radius={150}
                 pathOptions={{
-                color: '#F15A29',
-                fillColor: '#FF7C4D',
+                color: '#111827',
+                fillColor: '	#374151',
                 fillOpacity: 0.3,
                 }}
             />
-            </MapContainer>
+            </>
+            ))}
+        <Marker position={position}>
+        {/* <Popup>
+                <div className="p-2 text-sm">
+                <h2 className="text-lg font-semibold text-blue-700 mb-1">Juan Dela Cruz</h2>
+                <p className="text-gray-700"><strong>Address:</strong> 123 Rizal St, Makati City</p>
+                <p className="text-gray-700"><strong>Date:</strong> June 15, 2025</p>
+                <p className="text-gray-700"><strong>Description:</strong> Visited site for inspection. No issues reported.</p>
+                </div>
+          </Popup> */}
+        </Marker>
+
+            <Circle
+            center={position}
+            radius={150}
+            pathOptions={{
+                color: '#F15A29',
+                fillColor: '#FF7C4D',
+                fillOpacity: 0.3,
+            }}
+            />
+        </MapContainer>
         </div>
         </div>
 
         {/* Right Sidebar */}
-        <div className="hidden py-2 xl:col-span-3 lg:col-span-4 md:hidden lg:block">
-        <div className="mb-8 space-x-5 border-b-2 border-opacity-10 dark:border-violet-600">
-            <button type="button" className="pb-5 text-xs font-bold uppercase border-b-2 dark:border-violet-600">Latest</button>
-            <button type="button" className="pb-5 text-xs font-bold uppercase border-b-2 dark:border-gray-300 dark:text-gray-600">Popular</button>
-        </div>
-        <div className="flex flex-col divide-y dark:divide-gray-300">
-            {[
-            { text: "Aenean ac tristique lorem, ut mollis dui.", tag: "Politics" },
-            { text: "Nulla consectetur efficitur.", tag: "Sports" },
-            { text: "Vitae semper augue purus tincidunt libero.", tag: "World" },
-            { text: "Suspendisse potenti.", tag: "Business" },
-            ].map((item, i) => (
-            <div key={i} className="flex px-1 py-4">
-                <img
-                alt=""
-                className="flex-shrink-0 object-cover w-20 h-20 mr-4 dark:bg-gray-500"
-                src={`https://source.unsplash.com/random/24${i + 4}x32${i + 4}`}
-                />
-                <div className="flex flex-col flex-grow">
-                <a href="#" className="font-serif hover:underline">{item.text}</a>
-                <p className="mt-auto text-xs dark:text-gray-600">
-                    {["5", "14", "22", "37"][i]} minutes ago{" "}
-                    <a href="#" className="block dark:text-blue-600 lg:ml-2 lg:inline hover:underline">{item.tag}</a>
-                </p>
-                </div>
+        {/* <div className="hidden py-2 xl:col-span-3 lg:col-span-4 md:hidden lg:block">
+            <div className="mb-8 space-x-5">
+                <button type="button" className="pb-3 text-xs font-bold border-b-2 border- hover:border-gray-900">Upcoming</button>
+                <button type="button" className="pb-3 text-xs font-bold border-b-2 border- hover:border-gray-900">Bookings</button>
             </div>
-            ))}
-        </div>
-        </div>
+            <div style={{ maxHeight: "calc(80vh - 96px)" }} className="flex flex-col divide-y divide-gray-300 overflow-y-auto">
+                {clients.map(client=>(
+                    <ClientList clientInfo={client}/>
+                    ))
+                }
+
+            </div>
+        </div> */}
 
     </div>
+    <AllClientView clientList={placeHolderClients}/>
     </section>
 
     </>

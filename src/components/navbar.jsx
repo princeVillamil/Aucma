@@ -20,11 +20,11 @@ function navbar({ currentUser = null }) {
           </a>
           <ul className="items-stretch hidden space-x-3 lg:flex">
             <Link to="/" className="flex">
-              <a rel="noopener noreferrer" href="#" className="flex items-center px-4 -mb-1 border-b-2 dark:border- hover:border-gray-900">Home</a>
+              <a rel="noopener noreferrer" href="#" className="flex items-center px-4 -mb-1 border-b-2 border- hover:border-gray-900">Home</a>
             </Link>
             <Link to="/testimonials" className="flex">
               {/* <a rel="noopener noreferrer" href="#" className="flex items-center px-4 -mb-1 border-b-2 dark:border- dark:text-blue-gray-500 dark:border-gray-900">Link</a> */}
-              <a rel="noopener noreferrer" href="#" className="flex items-center px-4 -mb-1 border-b-2 dark:border- hover:border-gray-900">Testimonials</a>
+              <a rel="noopener noreferrer" href="#" className="flex items-center px-4 -mb-1 border-b-2 border- hover:border-gray-900">Testimonials</a>
             </Link>
             <Link to="/" className="flex">
               <a rel="noopener noreferrer" href="#" className="flex items-center px-4 -mb-1 border-b-2 dark:border- hover:border-gray-900">Link</a>

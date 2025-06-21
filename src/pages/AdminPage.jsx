@@ -44,7 +44,6 @@ function AdminPage() {
         description: description,
       }
 
-      // Check if all fields are filled
       const isValid =
         name.trim() !== "" &&
         date.trim() !== "" &&

@@ -30,6 +30,8 @@ createRoot(document.getElementById('root')).render(
 
           {/* Might need to add only Admin access */}
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/test" element={<TestPage />} />
+
         </Routes>
       </Router>
     </ThemeProvider>

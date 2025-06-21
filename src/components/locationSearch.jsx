@@ -22,7 +22,7 @@ function LocationSearch({ onSelectLocation, setIsValidLocation}) {
 
   return (
 
-    <form onSubmit={handleSearch} class="flex items-center max-w-lg mx-auto">   
+    <form onSubmit={handleSearch} class="flex items-center mx-auto">   
         <label for="voice-search" class="sr-only">Search</label>
         <div class="relative w-full">
             <input 
