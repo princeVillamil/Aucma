@@ -1,11 +1,38 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { doSignOut } from "../firebase/auth.js";
+import { Navigate, useNavigate } from 'react-router-dom'
+import { checkIfAdmin } from '../firebase/firestore.js'; 
 
 
 
 function navbar({ currentUser = null }) {
+    const navigate = useNavigate();
+    const [isAdmin, setIsAdmin] = useState(false)
+    useEffect(() => {
+      const fetchClients = async () => {
+        console.log(currentUser)
+        if (currentUser?.uid) {
+          try {
+            const fetched = await checkIfAdmin(currentUser.uid);
+            setIsAdmin(fetched);
+          } catch (error) {
+            console.error("Error fetching clients:", error);
+          }
+        }
+      };
+      fetchClients()
+    }, [currentUser]);
+    const handleSignOut = async () => {
+    try {
+      await doSignOut(); // your logout function
+      navigate('/');     // ✅ navigate after sign out
+    } catch (error) {
+      console.error("Sign out failed:", error);
+    }
+  };
+  
 
 
   return (
@@ -26,11 +53,13 @@ function navbar({ currentUser = null }) {
               {/* <a rel="noopener noreferrer" href="#" className="flex items-center px-4 -mb-1 border-b-2 dark:border- dark:text-blue-gray-500 dark:border-gray-900">Link</a> */}
               <a rel="noopener noreferrer" href="#" className="flex items-center px-4 -mb-1 border-b-2 border- hover:border-gray-900">Testimonials</a>
             </Link>
-            <Link to="/" className="flex">
-              <a rel="noopener noreferrer" href="#" className="flex items-center px-4 -mb-1 border-b-2 dark:border- hover:border-gray-900">Link</a>
+            {(currentUser!=null &&isAdmin)?<></>:
+            <Link to="/form" className="flex">
+              <a rel="noopener noreferrer" href="#" className="flex items-center px-4 -mb-1 border-b-2 dark:border- hover:border-gray-900">Forms</a>
             </Link>
+            }
             {
-              (currentUser!=null)
+              (currentUser!=null && isAdmin)
               ?
                 <Link to="/admin" className="flex">
                   <a rel="noopener noreferrer" href="#" className="flex items-center px-4 -mb-1 border-b-2 dark:border- hover:border-gray-900">Admin</a>
@@ -44,7 +73,7 @@ function navbar({ currentUser = null }) {
           {
             (currentUser!=null)
             ?
-            <button onClick={() => { doSignOut().then(() => { useNavigate('/login') }) }} type="button" className="cursor-pointer block w-full px-8 py-3 font-semibold rounded dark:bg-gray-900 dark:text-gray-50" role="menuitem">Sign out</button>
+            <button onClick={handleSignOut} type="button" className="cursor-pointer block w-full px-8 py-3 font-semibold rounded dark:bg-gray-900 dark:text-gray-50" role="menuitem">Sign out</button>
             :
             <Link to="/login" className="px-8 py-3 font-semibold rounded dark:bg-gray-900 dark:text-gray-50">Log in</Link>
           }
