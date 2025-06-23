@@ -15,6 +15,8 @@ import { FingerPrintIcon } from "@heroicons/react/24/solid";
 
 import { useAuth } from '../firebase/authContext.jsx'
 
+import { Link } from "react-router-dom";
+
 import { featuresData } from '../assets/data/featuresData'
 import { contactData } from '../assets/data/contactData.js'
 import AucmaFreezer from '../assets/imgs/AucmaFreezer.jpg'
@@ -23,12 +25,13 @@ import FeatureCard from '../components/featuresCard.jsx'
 import Footer from '../components/footer.jsx'
 import Navbar from '../components/navbar.jsx'
 
-import LoginPage from './LoginPage.jsx'
+
 
 import BGImg from '../assets/imgs/bg.jpg'
 
 function HomePage() {
   const { currentUser } = useAuth();
+
 
   return (
     <>
@@ -146,43 +149,17 @@ function HomePage() {
                 />
             ))}
           </div>
-            <div className="mx-auto w-full px-4 text-center lg:w-6/12">
-                <Typography variant="lead" className="font-semibold">Contact Us</Typography>
-                <Typography variant="h2" color="blue-gray" className="my-3">
-                    Want to work with us?
-                </Typography>
-                <Typography variant="lead" className="text-blue-gray-500">
-                    Complete this form and we will get back to you in 24 hours.
-                </Typography>
+          <section className="py-6 rounded-lg shadow-lg shadow-gray-500/10">
+            <div className="container mx-auto flex flex-col items-center justify-center p-4 space-y-8 md:p-10 md:px-24 xl:px-48">
+              <h1 className="text-5xl font-bold leading-none text-center">Sign up now</h1>
+              <p className="text-xl font-medium text-center text-gray-500">Sign up now to become a partner. We’re ready when you are! A dedicated platform ensuring your Aucma refrigeration units and warehouse equipment receive expert maintenance— fast, efficient, and certified.</p>
+              <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:space-x-8">
+              
+                <Link to="/form" className="flex"><a className="px-8 py-3 text-lg font-normal border-b-2 border- hover:border-gray-900">Get started</a></Link>
+                <Link to="/testimonials" className="flex"><a className="px-8 py-3 text-lg font-normal border-b-2 border- hover:border-gray-900">Learn more</a></Link>
+              </div>
             </div>
-          <form className="mx-auto w-full mt-12 lg:w-5/12">
-            <div className="mb-8 flex gap-8">
-              <Input variant="outlined" size="lg" label="Full Name" />
-              <Input variant="outlined" size="lg" label="Email Address" />
-            </div>
-            <Textarea variant="outlined" size="lg" label="Message" rows={8} />
-            <Checkbox
-              label={
-                <Typography
-                  variant="small"
-                  color="gray"
-                  className="flex items-center font-normal"
-                >
-                  I agree the
-                  <a
-                    href="#"
-                    className="font-medium transition-colors hover:text-gray-900"
-                  >
-                    &nbsp;Terms and Conditions
-                  </a>
-                </Typography>
-              }
-              containerProps={{ className: "-ml-2.5" }}
-            />
-            <Button variant="gradient" size="lg" className="mt-8" fullWidth>
-              Send Message
-            </Button>
-          </form>
+          </section>
         </div>
     </section>
 

@@ -10,7 +10,8 @@ import { useState } from "react";
 
 import { Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../firebase/authContext.jsx'
-import { doCreateUserWithEmailAndPassword, doSignInWithGoogle } from '../firebase/auth.js'
+import { doCreateUserWithEmailAndPassword, doSignInWithGoogle, getFriendlyAuthError } from '../firebase/auth.js'
+import ErrorCard from '../components/errorCard.jsx';
 
 
 import AucmaLogo from '../assets/imgs/AucmaLogo.png'
@@ -24,30 +25,27 @@ function RegisterPage() {
   const [password, setPassword] = useState('')
   const [isRegistering, setIsRegistering] = useState(false)
   //add later
-  const [errorMessage, setErrorMessage] = useState('')
+    const [errorMsg, setErrorMsg] = useState([])
     const onSubmit = async (e) => {
+      setErrorMsg([])
       console.log("working")
-    e.preventDefault();
-    const passwordRegex = /^(?=.*\d).{6,}$/; // Ensures at least 6 chars & one digit
-    if (!passwordRegex.test(password)) {
-      setErrorMessage("Password must be at least 6 characters long and contain at least one number.");
-      return;
-    }
-    // if (password !== confirmPassword) {
-    //   setErrorMessage("Passwords do not match.");
-    //   return;
-    // }
-    if (!isRegistering) {
-      setIsRegistering(true);
-      try {
-        await doCreateUserWithEmailAndPassword(email, password);
-        navigate("/"); 
-      } catch (error) {
-        setErrorMessage(error.message); 
-        setIsRegistering(false); 
+      e.preventDefault();
+      const passwordRegex = /^(?=.*\d).{6,}$/; // Ensures at least 6 chars & one digit
+      if (!passwordRegex.test(password)) {
+          setErrorMsg(prevMsg => prevMsg.includes(getFriendlyAuthError(error.code)) ? prevMsg : [...prevMsg, getFriendlyAuthError(error.code)]);
+        return;
       }
-    }
-  };
+      if (!isRegistering) {
+        setIsRegistering(true);
+        try {
+          await doCreateUserWithEmailAndPassword(email, password);
+          navigate("/"); 
+        } catch (error) {
+          setErrorMsg(prevMsg => prevMsg.includes(getFriendlyAuthError(error.code)) ? prevMsg : [...prevMsg, getFriendlyAuthError(error.code)]);
+          setIsRegistering(false); 
+        }
+      }
+    };
 
   const onGoogleSignIn = (e)=>{
     e.preventDefault()
@@ -113,27 +111,7 @@ function RegisterPage() {
               }}
             />
           </div>
-          <Checkbox
-            label={
-              <Typography
-                variant="small"
-                color="gray"
-                className="flex items-center justify-start font-medium"
-              >
-                I agree the&nbsp;
-                <a
-                  href="#"
-                  className="font-normal text-black transition-colors hover:text-gray-900 underline"
-                >
-                  Terms and Conditions
-                </a>
-              </Typography>
-            }
-            containerProps={{ className: "-ml-2.5" }}
-          />
-          {errorMessage && (
-              <span className='text-red-600 font-bold'>{isRegistering ? "redirecting" : errorMessage}</span>
-          )}
+          {(errorMsg.length > 0 ? <ErrorCard errorMsg={errorMsg}/> : <></>)}
           <Button type="submit" disabled={isRegistering} id='registerBTN' typ className="mt-6" fullWidth>
             Register Now
           </Button>

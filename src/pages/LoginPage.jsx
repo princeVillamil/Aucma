@@ -9,7 +9,9 @@ import { Link } from "react-router-dom";
 import React, { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../firebase/authContext.jsx'
-import { doSignInWithEmailAndPassword, doSignInWithGoogle } from '../firebase/auth.js'
+import { doSignInWithEmailAndPassword, doSignInWithGoogle, getFriendlyAuthError } from '../firebase/auth.js'
+import ErrorCard from '../components/errorCard.jsx';
+
 
 import AucmaLogo from '../assets/imgs/AucmaLogo.png';
 
@@ -21,10 +23,14 @@ function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isSigningIn, setIsSigningIn] = useState(false)
+
   //add later
-  const [errorMessage, setErrorMessage] = useState('')
+          // setErrorMsg(prevMsg => prevMsg.includes(getFriendlyAuthError(error.message)) ? prevMsg : [...prevMsg, getFriendlyAuthError(error.message)]);
+
+    const [errorMsg, setErrorMsg] = useState([])
 
   const onSubmit = async(e)=>{
+    setErrorMsg([])
     e.preventDefault()
     if(!isSigningIn){
       setIsSigningIn(true)
@@ -32,7 +38,8 @@ function LoginPage() {
         await doSignInWithEmailAndPassword(email, password);
         navigate("/"); 
       } catch (error) {
-        setErrorMessage(error.message); 
+        console.log(error, "----------",error.message)
+        setErrorMsg(prevMsg => prevMsg.includes(getFriendlyAuthError(error.code)) ? prevMsg : [...prevMsg, getFriendlyAuthError(error.code)]);
         setIsSigningIn(false); 
       }
     }
@@ -42,7 +49,7 @@ function LoginPage() {
     if(!isSigningIn){
       setIsSigningIn(true)
       doSignInWithGoogle().catch(error=>{
-        setErrorMessage(error.message); 
+        setErrorMsg(prevMsg => prevMsg.includes(getFriendlyAuthError(error.code)) ? prevMsg : [...prevMsg, getFriendlyAuthError(error.code)]);
         setIsSigningIn(false)
       })
     }
@@ -99,7 +106,7 @@ function LoginPage() {
             />
           </div>
 
-          <Checkbox
+          {/* <Checkbox
             label={
               <Typography
                 variant="small"
@@ -115,16 +122,16 @@ function LoginPage() {
               </Typography>
             }
             containerProps={{ className: "-ml-2.5" }}
-          />
-            {errorMessage && (
-              <span className='text-red-600 font-bold'>{isSigningIn ? "redirecting" : errorMessage}</span>
-            )}
+          /> */}
+          {(errorMsg.length > 0 ? <ErrorCard errorMsg={errorMsg}/> : <></>)}
+
+            
             <Button type="submit" disabled={isSigningIn}  className="mt-6 bg-gray-900" fullWidth>
                 Login
             </Button>
 
           <div className="flex items-center justify-between gap-2 mt-6">
-            <Checkbox
+            {/* <Checkbox
               label={
                 <Typography
                   variant="small"
@@ -134,10 +141,10 @@ function LoginPage() {
                 </Typography>
               }
               containerProps={{ className: "-ml-2.5" }}
-            />
-            <Typography variant="small" className="font-medium text-gray-900 hover:underline">
+            /> */}
+            {/* <Typography variant="small" className="font-medium text-gray-900 hover:underline">
               <a href="#">Forgot Password</a>
-            </Typography>
+            </Typography> */}
           </div>
 
           <div className="space-y-4 mt-8">
