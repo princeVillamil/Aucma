@@ -135,7 +135,7 @@ export function AllClientView({clientList, handleDeleteClient, isClient}) {
                           <MenuItem onClick={() => updateDocumentById('maintenanceRequests', client.id, {status: "in progress"})}>
                             In Progress
                           </MenuItem>
-                          <MenuItem onClick={() => udateDocumentById('maintenanceRequests', client.id, {status: "completed"})}>
+                          <MenuItem onClick={() => updateDocumentById('maintenanceRequests', client.id, {status: "completed"})}>
                             Completed
                           </MenuItem>
                         </MenuList>
