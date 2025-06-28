@@ -11,6 +11,19 @@ import { getDocumentById, updateDocumentById} from '../firebase/firestore.js';
 
 export function AllClientView({clientList, handleDeleteClient, isClient}) {
   const [techInfoMap, setTechInfoMap] = useState({});
+  
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+    const sortedClients = [...clientList].sort((a, b) => {
+    if (!sortConfig.key) return 0;
+
+    const aValue = a[sortConfig.key];
+    const bValue = b[sortConfig.key];
+
+    if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+    if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+    return 0;
+  });
+
   useEffect(() => {
     const fetchTechs = async () => {
       const map = {};
@@ -48,6 +61,19 @@ export function AllClientView({clientList, handleDeleteClient, isClient}) {
     return `${hour}:${minute} ${ampm}`;
   }
 
+  function handleSort(key) {
+  setSortConfig(prev => {
+    if (prev.key === key) {
+      return {
+        key,
+        direction: prev.direction === 'asc' ? 'desc' : 'asc',
+      };
+    }
+    return { key, direction: 'asc' };
+  });
+}
+
+
 
   return (
     <div className="container my-10 p-2 mx-auto sm:p-4 dark:text-gray-800">
@@ -65,22 +91,36 @@ export function AllClientView({clientList, handleDeleteClient, isClient}) {
           </colgroup>
           <thead className="dark:bg-gray-300">
             <tr className="text-left">
-              <th className="p-3">Client Request ID</th>
-              <th className="p-3">Client</th>
-              <th className="p-3">Address</th>
-              <th className="p-3">Date</th>
-              <th className="p-3">Time</th>
-              {(isClient)?<></>:
-              <>
-                <th className="p-3">Technician</th>
-                <th className="p-3 text-right">status</th>
-                <th className="p-3 text-right w-25"></th>
-              </>
-              }
+              <th className="p-3 cursor-pointer" onClick={() => handleSort('clientID')}>
+                Client Request ID {sortConfig.key === 'clientID' && (sortConfig.direction === 'asc' ? '▲' : '▼')}
+              </th>
+              <th className="p-3 cursor-pointer" onClick={() => handleSort('name')}>
+                Client {sortConfig.key === 'name' && (sortConfig.direction === 'asc' ? '▲' : '▼')}
+              </th>
+              <th className="p-3 cursor-pointer" onClick={() => handleSort('address')}>
+                Address {sortConfig.key === 'address' && (sortConfig.direction === 'asc' ? '▲' : '▼')}
+              </th>
+              <th className="p-3 cursor-pointer" onClick={() => handleSort('date')}>
+                Date {sortConfig.key === 'date' && (sortConfig.direction === 'asc' ? '▲' : '▼')}
+              </th>
+              <th className="p-3 cursor-pointer" onClick={() => handleSort('time')}>
+                Time {sortConfig.key === 'time' && (sortConfig.direction === 'asc' ? '▲' : '▼')}
+              </th>
+              {!isClient && (
+                <>
+                  <th className="p-3 cursor-pointer" onClick={() => handleSort('technicianID')}>
+                    Technician {sortConfig.key === 'technicianID' && (sortConfig.direction === 'asc' ? '▲' : '▼')}
+                  </th>
+                  <th className="p-3 text-right cursor-pointer" onClick={() => handleSort('status')}>
+                    Status {sortConfig.key === 'status' && (sortConfig.direction === 'asc' ? '▲' : '▼')}
+                  </th>
+                  <th className="p-3 text-right w-25"></th>
+                </>
+              )}
             </tr>
           </thead>
           <tbody>
-            {clientList.map(client=>(
+            {sortedClients.map(client => (
                 <tr className="border-b border-opacity-20 dark:border-gray-300 dark:bg-gray-50">
                   <td className="p-3">
                     <p>{client.clientID}</p>

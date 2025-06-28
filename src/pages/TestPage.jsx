@@ -18,6 +18,7 @@ import AllClientView from '../components/allClientView.jsx';
 import ClientList from '../components/clientList.jsx';
 import ErrorCard from '../components/errorCard.jsx';
 import { doc } from 'firebase/firestore/lite';
+import ClientPieCharts from '../components/clientPieCharts.jsx';
 
 
 
@@ -349,6 +350,9 @@ function TestPage() {
         </div>
 
     </div>
+
+    <ClientPieCharts clientList={clients} />
+
     <AllClientView clientList={clients} handleDeleteClient={handleDeleteClient}/>
     </section>
 
