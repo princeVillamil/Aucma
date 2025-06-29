@@ -7,6 +7,7 @@ import {
   Legend,
 } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
+import { getDocumentById } from '../firebase/firestore'; // ✅ Make sure you import this
 
 ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
@@ -18,6 +19,7 @@ const dynamicColors = [
 
 function ClientPieCharts({ clientList }) {
   const [openChart, setOpenChart] = useState(null);
+  const [techInfoMap, setTechInfoMap] = useState({}); // ✅ Added
   const chartRef = useRef(null);
 
   useEffect(() => {
@@ -25,6 +27,28 @@ function ClientPieCharts({ clientList }) {
       setTimeout(() => chartRef.current.resize(), 100);
     }
   }, [openChart]);
+
+  useEffect(() => {
+    const fetchTechNames = async () => {
+      const map = {};
+      for (const client of clientList) {
+        const uid = client.technicianID;
+        if (uid && uid !== "unfinalized" && !map[uid]) {
+          try {
+            const userDoc = await getDocumentById("users", uid);
+            map[uid] = userDoc?.displayName || "Unknown";
+          } catch {
+            map[uid] = "Unknown";
+          }
+        }
+      }
+      setTechInfoMap(map);
+    };
+
+    if (clientList.length > 0) {
+      fetchTechNames();
+    }
+  }, [clientList]);
 
   if (!clientList || clientList.length === 0) {
     return (
@@ -37,9 +61,10 @@ function ClientPieCharts({ clientList }) {
     );
   }
 
+  // === Compute data ===
   const statusCounts = { completed: 0, 'in progress': 0, unfinalized: 0 };
   const warehouseCounts = {};
-  const timeBuckets = { Morning: 0, Afternoon: 0, Evening: 0 };
+  const technicianCounts = {};
 
   clientList.forEach((client) => {
     const status = client.status || 'unfinalized';
@@ -48,20 +73,19 @@ function ClientPieCharts({ clientList }) {
     const warehouse = client.address?.split(',')[0] || 'Unknown';
     warehouseCounts[warehouse] = (warehouseCounts[warehouse] || 0) + 1;
 
-    const hour = parseInt(client.time?.split(':')[0], 10);
-    if (!isNaN(hour)) {
-      if (hour < 12) timeBuckets.Morning++;
-      else if (hour < 18) timeBuckets.Afternoon++;
-      else timeBuckets.Evening++;
-    }
+    const techUID = client.technicianID || 'Unassigned';
+    const name = techUID === 'Unassigned' || techUID === 'unfinalized'
+      ? 'Unassigned'
+      : techInfoMap[techUID] || 'Loading...';
+    technicianCounts[name] = (technicianCounts[name] || 0) + 1;
   });
 
   const commonOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-        legend: { position: 'bottom' },
-        datalabels: { display: false }, 
+      legend: { position: 'bottom', onClick: null },
+      datalabels: { display: false },
     },
   };
 
@@ -85,12 +109,12 @@ function ClientPieCharts({ clientList }) {
     }],
   };
 
-  const timeData = {
-    labels: ['Morning (Before 12PM)', 'Afternoon (12PM–6PM)', 'Evening (After 6PM)'],
+  const technicianData = {
+    labels: Object.keys(technicianCounts),
     datasets: [{
-      label: 'Request Time Distribution',
-      data: Object.values(timeBuckets),
-      backgroundColor: ['#60A5FA', '#FBBF24', '#F87171'],
+      label: 'Requests by Technician',
+      data: Object.values(technicianCounts),
+      backgroundColor: dynamicColors.slice(0, Object.keys(technicianCounts).length),
       borderWidth: 1,
     }],
   };
@@ -112,19 +136,19 @@ function ClientPieCharts({ clientList }) {
   const getCurrentChartData = () => {
     if (openChart === 'status') return statusData;
     if (openChart === 'warehouse') return warehouseData;
-    return timeData;
+    return technicianData;
   };
 
   const getCurrentLabels = () => {
     if (openChart === 'status') return statusData.labels;
     if (openChart === 'warehouse') return warehouseData.labels;
-    return timeData.labels;
+    return technicianData.labels;
   };
 
   const getCurrentColors = () => {
     if (openChart === 'status') return statusData.datasets[0].backgroundColor;
     if (openChart === 'warehouse') return warehouseData.datasets[0].backgroundColor;
-    return timeData.datasets[0].backgroundColor;
+    return technicianData.datasets[0].backgroundColor;
   };
 
   return (
@@ -134,7 +158,7 @@ function ClientPieCharts({ clientList }) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-6">
           {renderChart('status', 'Status Breakdown', statusData)}
           {renderChart('warehouse', 'Requests per Warehouse', warehouseData)}
-          {renderChart('time', 'Time of Day', timeData)}
+          {renderChart('technician', 'Requests per Technician', technicianData)}
         </div>
       </section>
 
@@ -150,33 +174,24 @@ function ClientPieCharts({ clientList }) {
             <h3 className="text-xl font-semibold mb-4 text-center">
               {openChart === 'status' ? 'Status Breakdown'
                 : openChart === 'warehouse' ? 'Requests per Warehouse'
-                : 'Time of Day'}
+                : 'Requests per Technician'}
             </h3>
             <div className="w-full max-w-4xl mx-auto h-[500px] flex items-center justify-center gap-6">
               {/* Chart box */}
               <div className="bg-gray-50 rounded-lg p-4 shadow-md flex-1 max-w-[60%] h-full flex items-center justify-center">
                 <Pie
-                ref={chartRef}
-                key={openChart}
-                data={getCurrentChartData()}
-                options={{
+                  ref={chartRef}
+                  key={openChart}
+                  data={getCurrentChartData()}
+                  options={{
                     ...commonOptions,
                     plugins: {
-                    ...commonOptions.plugins,
-                    legend: { display: false },
-                    // datalabels: {
-                    //     display: true,              
-                    //     color: '#fff',              
-                    //     font: {
-                    //     weight: 'bold',
-                    //     size: 16,                 
-                    //     },
-                    //     formatter: (value) => value,
-                    // },
+                      ...commonOptions.plugins,
+                      legend: { display: false },
                     },
-                }}
-                plugins={[ChartDataLabels]}
-                />  
+                  }}
+                  plugins={[ChartDataLabels]}
+                />
               </div>
 
               {/* Legend box */}
@@ -186,18 +201,18 @@ function ClientPieCharts({ clientList }) {
                   {getCurrentLabels().map((label, i) => {
                     const data = getCurrentChartData().datasets[0].data[i];
                     return (
-                        <li key={`${label}-${i}`} className="flex items-center gap-2 justify-between">
+                      <li key={`${label}-${i}`} className="flex items-center gap-2 justify-between">
                         <div className="flex items-center gap-2">
-                            <span
+                          <span
                             className="inline-block w-4 h-4 rounded-sm"
                             style={{ backgroundColor: getCurrentColors()[i] }}
-                            ></span>
-                            {label}
+                          ></span>
+                          {label}
                         </div>
                         <span className="font-semibold">{data}</span>
-                        </li>
+                      </li>
                     );
-                    })}
+                  })}
                 </ul>
               </div>
             </div>

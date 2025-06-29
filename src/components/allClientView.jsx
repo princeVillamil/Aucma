@@ -106,7 +106,10 @@ export function AllClientView({clientList, handleDeleteClient, isClient}) {
               <th className="p-3 cursor-pointer" onClick={() => handleSort('time')}>
                 Time {sortConfig.key === 'time' && (sortConfig.direction === 'asc' ? '▲' : '▼')}
               </th>
-              {!isClient && (
+
+              {isClient ? (
+                <th className="p-3 text-right">Status</th>
+              ) : (
                 <>
                   <th className="p-3 cursor-pointer" onClick={() => handleSort('technicianID')}>
                     Technician {sortConfig.key === 'technicianID' && (sortConfig.direction === 'asc' ? '▲' : '▼')}
@@ -137,6 +140,13 @@ export function AllClientView({clientList, handleDeleteClient, isClient}) {
                   <td className="p-3">
                     <span>{convertTo12HourFormat(client.time)}</span>
                   </td>
+                  {isClient && (
+                    <td className="p-3 text-right">
+                      <span className="inline-block px-2 py-1 text-sm font-medium text-white bg-gray-500 rounded">
+                        {client.status}
+                      </span>
+                    </td>
+                  )}
                   {(isClient)? <></>:
                   <td className="p-3">
                     {/* <p>{client.technicianID}</p> */}
