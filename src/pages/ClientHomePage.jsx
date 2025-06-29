@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { placeHolderUsers } from "../assets/data/placeHolderUsers";
-import UserTable from "../components/UserTable";
+import placeHolderClients from "../assets/data/placeHolderClients";
+import FormsTable from "../components/FormsTable";
 import {
   Card,
   CardBody,
@@ -32,37 +32,10 @@ const stats = [
 
 
 
-function HomePage() {
-  const [profiles, setProfiles] = useState(placeHolderUsers);
-  const [allClients, setAllClients] = useState([]);
-  const [allAdmin, setAllAdmin] = useState([]);
+function ClientHomePage({userData}) {
+    console.log(userData)
+  const [profiles, setProfiles] = useState(placeHolderClients);
 
-  useEffect(() => {
-    setAllClients(profiles.filter((user) => user.role === "client"));
-    setAllAdmin(profiles.filter((user) => user.role === "admin"));
-  }, [profiles]);
-  // const [allClients, setAllCients] = useState(profiles.filter((user) => user.role === "client"))
-  // const [allAdmin, setAllAdmin] = useState(profiles.filter((user) => user.role === "admin"))
-  // profiles.filter((user) => console.log(user.role === "admin"))
-  // useEffect(() => {
-  //   setAllAdmin(profiles.filter((user) => user.role === "admin"));
-  //   setAllClients(profiles.filter((user) => user.role === "client"));
-  // }, [profiles]);
-
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-
-  const totalPages = Math.ceil(profiles.length / itemsPerPage);
-  const paginatedProfiles = profiles.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  const formatDate = (dateStr) => {
-    const options = { year: "numeric", month: "short", day: "numeric" };
-    return new Date(dateStr).toLocaleDateString(undefined, options);
-  };
   return (
     
     <div className="py-6 px-10 space-y-6">
@@ -84,15 +57,11 @@ function HomePage() {
         ))}
       </div>
 
-      {/* Client */}
-      <UserTable title={"Client Users"} data={allClients} type="technician"/>
-
-      {/* Admin */}
-      <UserTable title={"Admin Users"} data={allAdmin} type="address"/>
+        <FormsTable requests={profiles} type="client"/>
 
     </div>
     
   )
 }
 
-export default HomePage
+export default ClientHomePage

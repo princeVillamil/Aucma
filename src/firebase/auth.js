@@ -3,53 +3,66 @@ import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import { createUserWithEmailAndPassword, GoogleAuthProvider, sendEmailVerification, sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup, updatePassword } from "firebase/auth";
 
 
-export const doCreateUserWithEmailAndPassword = async(email, password) =>{
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  const user = userCredential.user;
+export const doCreateUserWithEmailAndPassword = async (userDetails) => {
+  const {
+    fullName,
+    email,
+    password,
+    contactNumber = null,
+    address = null,
+    isTechnician = false, // optional override
+    role = "client",       // default role
+  } = userDetails;
 
   try {
-    await sendEmailVerification(user);
-    console.log("Verification email sent.", user);
-  } catch (error) {
-    console.error("Failed to send verification email:", error);
-  }
-  try {
-    await setDoc(doc(db, "users", user.uid), {
-      uid: user.uid,
-      email: user.email,
-      role: "client",
-      emailVerified: false,
-      createdAt: serverTimestamp()
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    try {
+      await sendEmailVerification(user);
+      console.log("Verification email sent to:", user.email);
+    } catch (error) {
+      console.error("Failed to send verification email:", error);
+    }
+
+    await setDoc(doc(db, "updatedUsers", user.uid), {
+      fullName,
+      email,
+      contactNumber,
+      address,
+      role,
+      isTechnician,
+      createdAt: serverTimestamp(),
     });
-    console.log("User saved!");
-  } catch (error) {
-    console.error("Firestore write error:", error);
-  }
 
-  return userCredential;
+    return userCredential;
+  } catch (error) {
+    console.error("Error creating user:", error);
+    throw error;
+  }
 };
 
 export const doSignInWithEmailAndPassword = async(email, password) =>{
   return signInWithEmailAndPassword(auth, email, password);
 };
 
-export const doSignInWithGoogle = async()=>{
+export const doSignInWithGoogle = async () => {
   try {
     const provider = new GoogleAuthProvider();
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
 
-    // Reference to the Firestore user document
-    const userRef = doc(db, "users", user.uid);
+    const userRef = doc(db, "updatedUsers", user.uid);
     const userSnap = await getDoc(userRef);
 
     // If the user doesn't exist in Firestore, add them
     if (!userSnap.exists()) {
       await setDoc(userRef, {
-        uid: user.uid,
+        fullName: user.displayName || "",
         email: user.email,
-        displayName: user.displayName || "",
-        role: "client", // adjust as needed
+        contactNumber: null,     // Google doesn't provide this
+        address: null,           // You can update later
+        role: "client",          // Default role
+        isTechnician: false,     // Default
         createdAt: serverTimestamp(),
       });
       console.log("Google user added to Firestore.");
@@ -63,18 +76,20 @@ export const doSignInWithGoogle = async()=>{
     throw error;
   }
 };
+
 export const doSignOut = () =>{
   return auth.signOut();
 };
-export function getFriendlyAuthError(errorCode) {
+export function getFriendlyAuthError(error) {
+  const errorCode = error?.code || error;
+
   switch (errorCode) {
-    // Sign In + Sign Up common
     case "auth/invalid-email":
       return "The email address is not valid.";
 
     case "auth/invalid-credential":
     case "auth/internal-error":
-      return "Something went wrong. Please try again.";
+      return "Invalid email or password. Please try again.";
 
     case "auth/network-request-failed":
       return "Network error. Please check your internet connection.";
@@ -82,14 +97,12 @@ export function getFriendlyAuthError(errorCode) {
     case "auth/operation-not-allowed":
       return "This sign-in method is currently disabled. Please contact support.";
 
-    // Sign Up specific
     case "auth/email-already-in-use":
       return "This email is already registered. Try signing in instead.";
 
     case "auth/weak-password":
       return "Your password is too weak. It must be at least 6 characters.";
 
-    // Sign In specific
     case "auth/user-not-found":
       return "No account found with that email.";
 
@@ -102,7 +115,6 @@ export function getFriendlyAuthError(errorCode) {
     case "auth/too-many-requests":
       return "Too many attempts. Please wait a moment and try again.";
 
-    // OAuth / Popup related
     case "auth/popup-closed-by-user":
       return "The sign-in popup was closed before completing sign in.";
 
@@ -119,6 +131,7 @@ export function getFriendlyAuthError(errorCode) {
       return "An unknown error occurred. Please try again.";
   }
 }
+
 
 
 //Add Later

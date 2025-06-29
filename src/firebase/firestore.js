@@ -2,20 +2,7 @@ import {db} from './firebase.js'
 import emailjs from '@emailjs/browser';
 import { collection, addDoc, getDocs, getDoc, serverTimestamp, doc, updateDoc, query, where, deleteDoc } from "firebase/firestore";
 
-    // name: "Ace Saatchi & Saatchi",
-    // address: "Paseo de Roxas, Makati City",
-    // date: "2025-06-08",
-    // time: "13:15",
-    // lat: 14.5543,
-    // lng: 121.0252,
-    // description: "Local branch of an international ad agency network delivering insight-driven solutions.",
-    // requestID: "REQ-005",
-    // clientID: "CL-005",
-    // technicianID: "TECH-005",
-    // clientAddress: "Paseo de Roxas, Makati City",
-    // status: "Unfinalized"
 
-// Submit A Maintenance Request 
 export const submitMaintenanceRequest = async(requestInfo) =>{
   try {
     const requestData = {
