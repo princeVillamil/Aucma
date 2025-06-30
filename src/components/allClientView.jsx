@@ -7,6 +7,13 @@ import {
 } from "@material-tailwind/react";
 import { useEffect, useState } from "react";
 import { getDocumentById, updateDocumentById} from '../firebase/firestore.js'; 
+import {
+  Dialog,
+  DialogHeader,
+  DialogBody,
+  DialogFooter,
+  Input,
+} from "@material-tailwind/react";
 
 
 export function AllClientView({clientList, handleDeleteClient, isClient}) {
@@ -19,9 +26,23 @@ export function AllClientView({clientList, handleDeleteClient, isClient}) {
     const aValue = a[sortConfig.key];
     const bValue = b[sortConfig.key];
 
-    if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
-    if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
-    return 0;
+    if (sortConfig.key === 'status') {
+      const statusOrder = {
+        "completed": 1,
+        "in progress": 2,
+        "unfinalized": 3,
+        "for cancellation": 4,
+      };
+      const aRank = statusOrder[aValue] ?? 99;
+      const bRank = statusOrder[bValue] ?? 99;
+
+      return sortConfig.direction === 'asc'
+        ? aRank - bRank
+        : bRank - aRank;
+    } else {
+      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+    }
   });
 
   useEffect(() => {
@@ -73,6 +94,29 @@ export function AllClientView({clientList, handleDeleteClient, isClient}) {
   });
 }
 
+  const [openDialog, setOpenDialog] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [selectedClientId, setSelectedClientId] = useState(null);
+
+  const handleOpenDialog = (clientId) => {
+    setSelectedClientId(clientId);
+    setOpenDialog(true);
+  };
+
+  const handleCancelRequest = async () => {
+    await updateDocumentById("maintenanceRequests", selectedClientId, {
+      status: "for cancellation",
+      cancelReason: cancelReason,
+    });
+    setOpenDialog(false);
+    setCancelReason("");
+    setSelectedClientId(null);
+  };
+
+  const [viewReasonDialogOpen, setViewReasonDialogOpen] = useState(false);
+  const [reasonMessage, setReasonMessage] = useState("");
+
+
 
 
   return (
@@ -108,7 +152,12 @@ export function AllClientView({clientList, handleDeleteClient, isClient}) {
               </th>
 
               {isClient ? (
-                <th className="p-3 text-right">Status</th>
+                <>
+                  <th className="p-3 cursor-pointer text-right" onClick={() => handleSort('status')}>
+                    Status {sortConfig.key === 'status' && (sortConfig.direction === 'asc' ? '▲' : '▼')}
+                  </th>
+                  <th className="p-3 text-right w-25"></th>
+                </>
               ) : (
                 <>
                   <th className="p-3 cursor-pointer" onClick={() => handleSort('technicianID')}>
@@ -142,9 +191,22 @@ export function AllClientView({clientList, handleDeleteClient, isClient}) {
                   </td>
                   {isClient && (
                     <td className="p-3 text-right">
-                      <span className="inline-block px-2 py-1 text-sm font-medium text-white bg-gray-500 rounded">
-                        {client.status}
-                      </span>
+                      <div className="flex flex-col items-end">
+                        <span className="inline-block px-2 py-1 text-sm font-medium text-white bg-gray-500 rounded">
+                          {client.status}
+                        </span>
+                        {client.status === "for cancellation" && client.cancelReason && (
+                          <button
+                            className="text-xs text-red-700 underline mt-2 text-right self-end"
+                            onClick={() => {
+                              setReasonMessage(client.cancelReason);
+                              setViewReasonDialogOpen(true);
+                            }}
+                          >
+                            View Reason
+                          </button>
+                        )}
+                      </div>
                     </td>
                   )}
                   {(isClient)? <></>:
@@ -174,30 +236,43 @@ export function AllClientView({clientList, handleDeleteClient, isClient}) {
                   }
                   {(isClient)?<></>:
                   <td className="p-3 text-right">
+                    <div className="flex flex-col items-end">
                       <Menu placement="bottom-end">
                         <MenuHandler>
-                          <Button size="sm" className="px-2 py-1 text-sm min-w-0 bg-transparent border normal-case font-normal bg-gray-900">{client.status}</Button>
+                          <Button
+                            size="sm"
+                            className="px-2 py-1 text-sm min-w-0 bg-transparent border normal-case font-normal bg-gray-900"
+                          >
+                            {client.status}
+                          </Button>
                         </MenuHandler>
                         <MenuList>
-                          <MenuItem onClick={() => {updateDocumentById('maintenanceRequests', client.id, {status: "unfinalized"})}}>
+                          <MenuItem onClick={() => updateDocumentById('maintenanceRequests', client.id, { status: "unfinalized" })}>
                             Unfinalized
                           </MenuItem>
-                          <MenuItem onClick={() => updateDocumentById('maintenanceRequests', client.id, {status: "in progress"})}>
+                          <MenuItem onClick={() => updateDocumentById('maintenanceRequests', client.id, { status: "in progress" })}>
                             In Progress
                           </MenuItem>
-                          <MenuItem onClick={() => updateDocumentById('maintenanceRequests', client.id, {status: "completed"})}>
+                          <MenuItem onClick={() => updateDocumentById('maintenanceRequests', client.id, { status: "completed" })}>
                             Completed
                           </MenuItem>
                         </MenuList>
-                        {/* <MenuList>
-                          <MenuItem>Unfinalized</MenuItem>
-                          <MenuItem>In Progress</MenuItem>
-                          <MenuItem>Completed</MenuItem>
-                        </MenuList> */}
                       </Menu>
+
+                      {client.status === "for cancellation" && client.cancelReason && (
+                        <button
+                          className="text-xs text-red-700 underline mt-2"
+                          onClick={() => {
+                            setReasonMessage(client.cancelReason);
+                            setViewReasonDialogOpen(true);
+                          }}
+                        >
+                          View Reason
+                        </button>
+                      )}
+                    </div>
                   </td>
                   }
-                  {(isClient)?<></>:
                   <td className="p-3 text-right w-25">
                     <div className="mb-3 flex gap-3 text-right">
                       <Menu placement="bottom-end">
@@ -205,20 +280,52 @@ export function AllClientView({clientList, handleDeleteClient, isClient}) {
                           <Button size="sm" className="px-2 py-1 text-sm min-w-0 bg-transparent border text-gray-900">...</Button>
                         </MenuHandler>
                         <MenuList>
-                          <MenuItem onClick={()=>handleDeleteClient('maintenanceRequests', client.id)}>Delete</MenuItem>
-                          {/* <MenuItem>Notify</MenuItem> */}
+                          {isClient ? (
+                            <MenuItem onClick={() => handleOpenDialog(client.id)}>Request Cancellation</MenuItem>
+                          ) : (
+                            <MenuItem onClick={() => handleDeleteClient('maintenanceRequests', client.id)}>Delete</MenuItem>
+                          )}
                         </MenuList>
                       </Menu>
-                      
                     </div>
                   </td>
-                  }
                 </tr>
                 ))
             }
           </tbody>
         </table>
       </div>
+
+      <Dialog open={openDialog} handler={() => setOpenDialog(false)}>
+      <DialogHeader>Request Cancellation</DialogHeader>
+      <DialogBody>
+        <Input
+          label="Reason for cancellation"
+          value={cancelReason}
+          onChange={(e) => setCancelReason(e.target.value)}
+        />
+      </DialogBody>
+      <DialogFooter>
+        <Button variant="text" onClick={() => setOpenDialog(false)} className="mr-1">
+          Cancel
+        </Button>
+        <Button variant="gradient" color="red" onClick={handleCancelRequest}>
+          Submit
+        </Button>
+      </DialogFooter>
+    </Dialog>
+
+    <Dialog open={viewReasonDialogOpen} handler={() => setViewReasonDialogOpen(false)}>
+      <DialogHeader>Cancellation Reason</DialogHeader>
+      <DialogBody>
+        <p className="text-sm max-h-60 overflow-y-auto whitespace-pre-wrap">{reasonMessage}</p>
+      </DialogBody>
+      <DialogFooter>
+        <Button variant="text" onClick={() => setViewReasonDialogOpen(false)}>
+          Close
+        </Button>
+      </DialogFooter>
+    </Dialog>
     </div>
   );
 }
