@@ -1,4 +1,5 @@
 import { useState } from "react";
+import {sendEmail} from '../firebase/firestoreFunctions'
 import {
   Card,
   CardBody,

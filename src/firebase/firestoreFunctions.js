@@ -1,6 +1,12 @@
 import {db} from './firebase.js'
+import emailjs from "@emailjs/browser";
 import { collection, addDoc, getDocs, getDoc, serverTimestamp, doc, updateDoc, query, where, deleteDoc, arrayUnion} from "firebase/firestore";
-
+// VITE_EMAILJS_SERVICE_ID=service_kvqdts5
+// VITE_EMAILJS_TEMPLATE_ID=template_16ccyqj
+// VITE_EMAILJS_PUBLIC_KEY=miNUXvjUMTUmrCixK
+const SERVICE_ID = "service_kvqdts5";
+const TEMPLATE_ID = "template_o2m35hk";
+const PUBLIC_KEY = "miNUXvjUMTUmrCixK";
 
 // Check if USER from DB
 export const checkIfAdmin = async (userId) => {
@@ -166,5 +172,34 @@ export const getAllUsers = async () => {
   } catch (error) {
     console.error("Error getting documents:", error);
     throw error;
+  }
+};
+// Email
+export const sendEmail = async (data) => {
+  const emailData = {
+    to_name: "",
+    to_email: "",
+    from_name: "",
+    from_email: "Company@Email.com",
+    eta: data.preferredTime,
+    technician_name: data.technician,
+    issueDescription: data.issueDescription
+  };
+
+  try {
+    const userData = await getDocumentById("updatedUsers", data.clientID);
+    emailData.to_name = userData.fullName;
+    emailData.to_email = userData.email;
+    emailData.from_name = userData.technician;
+
+    console.log("Sending email with data:", emailData);
+
+    const result = await emailjs.send(SERVICE_ID, TEMPLATE_ID, emailData, PUBLIC_KEY);
+    console.log("Email sent successfully:", result.text);
+
+    return { success: true, message: result.text };
+  } catch (error) {
+    console.error("Email failed:", error);
+    return { success: false, message: error.text || "Email send failed" };
   }
 };

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Loading from "../components/Loading";
 import Charts from "../components/Charts";
 
-export default function RequestsviewPage({userData}) {
+export default function RequestsviewPage() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
 

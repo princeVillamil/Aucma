@@ -133,7 +133,7 @@ export default function MapviewPage() {
         <>
         <Marker position={{ lat: client.lat, lng: client.lng }}>
           <Popup>
-            <div className="bg-white rounded-xl shadow-xl p-4 w-72 text-sm text-gray-800">
+            <div className="bg-white p-4 w-72 text-sm text-gray-800">
               <div className="flex justify-between items-start">
                 <h3 className="text-lg font-semibold">{client.clientName}</h3>
                 <span

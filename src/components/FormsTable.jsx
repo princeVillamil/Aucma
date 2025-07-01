@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { PencilIcon, TrashIcon, BellIcon } from "@heroicons/react/24/outline";
 import { Input, Button } from "@material-tailwind/react";
 import { useNavigate } from "react-router-dom";
-
+import { sendEmail } from "../firebase/firestoreFunctions";
 const statusColors = {
   Completed: "bg-green-100 text-green-600",
   "Pending": "bg-yellow-100 text-yellow-600",
@@ -42,6 +42,19 @@ export default function FormsTable({ requests, type="admin" }) {
 
   const handleEdit = (form) => {
     navigate(`/${type}/dashboard/forms/edit`, { state: { formData: form } });
+  };
+  const handleSendETA = async (reqData) => {
+    if(type=="client") return
+    try {
+      const response = await sendEmail(reqData);
+      if (response.success) {
+        alert("Email sent successfully!");
+      } else {
+        alert("Email failed:", response.message);
+      }
+    } catch (err) {
+      console.error("Unexpected error sending email:", err);
+    }
   };
   const handleCancel = (form) => {
     navigate(`/${type}/dashboard/forms/cancel`, { state: { formData: form } });
@@ -88,7 +101,7 @@ export default function FormsTable({ requests, type="admin" }) {
               </Button>
             </th>
             <th className="px-4 py-3">Status</th>
-            <th className="px-4 py-3">Actions</th>
+            <th className="px-4 py-3 text-right">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -118,6 +131,11 @@ export default function FormsTable({ requests, type="admin" }) {
                   <button onClick={() => handleEdit(req)} className="text-gray-900 hover:text-gray-600">
                     <PencilIcon className="h-5 w-5" />
                   </button>
+                  {type=="admin"?
+                  <button onClick={()=>{handleSendETA(req)}} className="text-blue-900 hover:text-blue-600">
+                    <BellIcon className="h-5 w-5" />
+                  </button>:null
+                  }
                   <button className="text-red-900 hover:text-red-600">
                     <TrashIcon onClick={() => handleCancel(req)} className="h-5 w-5" />
                   </button>
