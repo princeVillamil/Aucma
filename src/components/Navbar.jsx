@@ -18,7 +18,7 @@ import {
   HomeIcon,
   ClipboardDocumentListIcon,
   MapIcon,
-  WrenchScrewdriverIcon 
+  WrenchScrewdriverIcon, BellIcon
 } from "@heroicons/react/24/outline";
  
 function Navbar({headerType}) {
@@ -71,6 +71,14 @@ function Navbar({headerType}) {
             <ClipboardDocumentListIcon  className="h-5 w-5" />
           </ListItemPrefix>
           Forms
+        </ListItem>
+      </Link>
+      <Link to={`/${headerType}/dashboard/notification`}>
+        <ListItem>
+          <ListItemPrefix>
+            <BellIcon  className="h-5 w-5" />
+          </ListItemPrefix>
+          Notification
         </ListItem>
       </Link>
       <hr className="my-2 border-blue-gray-50" />

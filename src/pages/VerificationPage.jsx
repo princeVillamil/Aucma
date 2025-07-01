@@ -1,6 +1,6 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import { useEffect } from "react";
 import {doSignOut} from "../firebase/auth"
+import { useAuth } from "../firebase/authContext.jsx";
 import { Navigate, useNavigate } from 'react-router-dom'
 import {
   Button,
@@ -8,14 +8,23 @@ import {
 
 export default function VerificationPage() {
     const navigate = useNavigate();
-    const handleSignOut = async () => {
-      try {
-        await doSignOut();
-        navigate('/auth');     
-      } catch (error) {
-        console.error("Sign out failed:", error);
-      }
-    };
+    const { currentUser } = useAuth();
+    
+
+    useEffect(()=>{
+      const handleSignOut = async () => {
+        try {
+          if(currentUser){
+            console.log("Logged OUt")
+            await doSignOut();
+          }
+        } catch (error) {
+          console.error("Sign out failed:", error);
+        }
+      };
+      handleSignOut()
+    },[])
+
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden py-6 sm:py-12 bg-white">
       <div className="max-w-xl px-5 text-center">
@@ -29,10 +38,7 @@ export default function VerificationPage() {
             mail@yourdomain.com
           </span>.
         </p>
-        <Button type="text"
-          onClick={handleSignOut}
-          className="mt-3 inline-block w-96 rounded bg-gray-900 px-5 py-3 font-medium text-white shadow-xl hover:bg-gray-800"
-        >
+        <Button type="text" onClick={() => navigate('/auth')}>
           Login →
         </Button>
       </div>

@@ -10,8 +10,9 @@ export const doCreateUserWithEmailAndPassword = async (userDetails) => {
     password,
     contactNumber = null,
     address = null,
-    isTechnician = false, // optional override
-    role = "client",       // default role
+    isTechnician = false, 
+    role = "client",      
+    message = [] 
   } = userDetails;
 
   try {
@@ -31,6 +32,7 @@ export const doCreateUserWithEmailAndPassword = async (userDetails) => {
       address,
       role,
       isTechnician,
+      message,
       createdAt: serverTimestamp(),
     });
 
@@ -59,10 +61,11 @@ export const doSignInWithGoogle = async () => {
       await setDoc(userRef, {
         fullName: user.displayName || "",
         email: user.email,
-        contactNumber: null,     // Google doesn't provide this
-        address: null,           // You can update later
-        role: "client",          // Default role
-        isTechnician: false,     // Default
+        contactNumber: null,     
+        address: null,           
+        role: "client",          
+        isTechnician: false,
+        message: [],
         createdAt: serverTimestamp(),
       });
       console.log("Google user added to Firestore.");

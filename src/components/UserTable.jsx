@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { updateMaintenanceRequest } from "../firebase/firestoreFunctions"
 import {
   Dialog,
   DialogHeader,
@@ -9,7 +10,7 @@ import {
   Input, Select, Option
 } from "@material-tailwind/react";
 
-export default function UserTable({ title, data, type }) {
+export default function UserTable({ title, data, type, setProfiles }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedUser, setSelectedUser] = useState(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -20,20 +21,43 @@ export default function UserTable({ title, data, type }) {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
-
-  const formatDate = (dateStr) => {
-    const options = { year: "numeric", month: "short", day: "numeric" };
-    return new Date(dateStr).toLocaleDateString(undefined, options);
-  };
+const formatDate = (dateInput) => {
+  if (!dateInput) return "—";
+  const date = dateInput instanceof Date ? dateInput : dateInput.toDate?.() || new Date(dateInput);
+  const utc8Date = new Date(date.getTime() + 8 * 60 * 60 * 1000);
+  const year = utc8Date.getUTCFullYear();
+  const month = String(utc8Date.getUTCMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+  const day = String(utc8Date.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
   const handleEditClick = (user) => {
-    console.log(user)
     setSelectedUser({ ...user });
     setIsEditOpen(true);
   };
 
-  const handleSave = () => {
-    setIsEditOpen(false); //add database
+  const handleSave = async () => {
+    try {
+      if (!selectedUser?.id) return;
+      await updateMaintenanceRequest("updatedUsers", selectedUser.id, {
+        role: selectedUser.role,
+        isTechnician: selectedUser.role !== "client" ? selectedUser.isTechnician : false,
+      });
+      setProfiles(prev =>
+        prev.map(user =>
+          user.id === selectedUser.id
+            ? {
+                ...user,
+                role: selectedUser.role,
+                isTechnician: selectedUser.role !== "client" ? selectedUser.isTechnician : false,
+              }
+            : user
+        )
+      );
+      setIsEditOpen(false);
+    } catch (error) {
+      console.error("Failed to update user:", error);
+    }
   };
 
   return (
@@ -57,9 +81,9 @@ export default function UserTable({ title, data, type }) {
               <tr key={idx} className="border-t border-gray-300">
                 <td className="px-4 py-4 font-medium text-gray-900">{user.fullName}</td>
                 <td className="px-4 py-4">{user.email}</td>
-                <td className="px-4 py-4">{user.contactNumber}</td>
+                <td className="px-4 py-4">{user.contactNumber == null ? "0917-123-4567":user.contactNumber}</td>
                 <td className="px-4 py-4">
-                  {user.role !== "client" ? (user.isTechnician ? "Yes" : "No") : user.address}
+                  {user.role !== "client" ? (user.isTechnician ? "Yes" : "No") : user.address == null ? "123 Ayala Avenue, Makati City":user.address}
                 </td>
                 <td className="px-4 py-4 capitalize">{user.role}</td>
                 <td className="px-4 py-4">{formatDate(user.createdAt)}</td>
@@ -69,11 +93,11 @@ export default function UserTable({ title, data, type }) {
                       className="text-gray-900 hover:text-gray-600"
                       onClick={() => handleEditClick(user)}
                     >
-                      <PencilIcon className="h-5 w-5" />
+                      <PencilIcon className="h-5 w-10" />
                     </button>
-                    <button className="text-red-900 hover:text-red-600">
+                    {/* <button className="text-red-900 hover:text-red-600">
                       <TrashIcon className="h-5 w-5" />
-                    </button>
+                    </button> */}
                   </div>
                 </td>
               </tr>

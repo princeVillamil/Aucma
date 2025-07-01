@@ -19,6 +19,9 @@ import ProtectedRoute from './components/ProtectedRoute';
 import VerificationPage from './pages/VerificationPage';
 import HeroPage from './pages/HeroPage';
 
+import CancelledPage from './pages/CancelledPage';
+import NotificationPage from './pages/NotificationPage';
+
 
 function App() {
 
@@ -63,13 +66,44 @@ function App() {
       <Route
         path="client/dashboard/forms/edit"
         element={
-          <Layout currentPage="Map View" headerType="client">
+          <Layout currentPage="Edit Forms" headerType="client">
             <ProtectedRoute role="client">
               <EditFormsPage type="client" />
             </ProtectedRoute>
           </Layout>
         }
       />
+      <Route
+        path="client/dashboard/profile"
+        element={
+          <Layout currentPage="Profile">
+            <ProtectedRoute role="client">
+              <ProfilePage />
+            </ProtectedRoute>
+          </Layout>
+        }
+      />
+      <Route
+        path="client/dashboard/forms/cancel"
+        element={
+          <Layout currentPage="Cancel" headerType="client">
+            <ProtectedRoute role="client">
+              <CancelledPage type="client"/>
+            </ProtectedRoute>
+          </Layout>
+        }
+      />
+      <Route
+        path="client/dashboard/notification"
+        element={
+          <Layout currentPage="Notification" headerType="client">
+            <ProtectedRoute role="client">
+              <NotificationPage type="client"/>
+            </ProtectedRoute>
+          </Layout>
+        }
+      />
+      
 
       {/* Admin Routes */}
       <Route
@@ -132,7 +166,28 @@ function App() {
           </Layout>
         }
       />
+      <Route
+        path="admin/dashboard/forms/cancel"
+        element={
+          <Layout currentPage="Cancel">
+            <ProtectedRoute role="admin">
+              <CancelledPage />
+            </ProtectedRoute>
+          </Layout>
+        }
+      />
+      <Route
+        path="admin/dashboard/notification"
+        element={
+          <Layout currentPage="Notification">
+            <ProtectedRoute role="admin">
+              <NotificationPage type="admin"/>
+            </ProtectedRoute>
+          </Layout>
+        }
+      />
     </Routes>
+
 
     
   )

@@ -142,7 +142,7 @@ export default function AuthPage() {
     };
     const onGoogleSignIn = async (e) => {
         e.preventDefault();
-        setErrorList([]); // clear existing errors
+        setErrorList([]);
 
         try {
             const userCredential = await doSignInWithGoogle();

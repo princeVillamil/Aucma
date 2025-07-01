@@ -1,22 +1,24 @@
 
 import React, { useState } from "react";
 import Alert from "../components/Alert";
+import {submitMaintenanceRequest} from "../firebase/firestoreFunctions"
 
-export default function ClientCreateFormsPage() {
+export default function CreateFormsPage({userData, technicianList}) {
+  // console.log(userData, "CreateFormsPage")
+
   const [errorList, setErrorList] = useState([])
-    // info: "text-blue-600 border-blue-700 bg-blue-50",
-    // danger: "text-red-600 border-red-700 bg-red-50",
-    // success: "text-green-600 border-green-700 bg-green-50",
-    // warning: "text-yellow-600 border-yellow-700 bg-yellow-50",
-    // neutral: "text-gray-600 border-gray-700 bg-gray-50",
+  const [userDataLog, setUserDataLog] = useState(userData)
+  console.log(userDataLog,"userDataLog")
   const [formData, setFormData] = useState({
-    clientName: "",
-    contactNumber: "",
-    address: "",
-    issueDescription: "",
-    preferredDate: "",
-    preferredTime: "",
+    clientID: userDataLog.id,
+    clientName: null,
+    contactNumber: null,
+    address: null,
+    issueDescription: null,
+    preferredDate: null,
+    preferredTime: null,
     technician: null,
+    technicianID: null,
     lat: null,
     lng: null,
     status: "Pending",
@@ -24,10 +26,14 @@ export default function ClientCreateFormsPage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
+  
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
     const errors = [];
     const requiredFields = [
@@ -59,9 +65,37 @@ export default function ClientCreateFormsPage() {
       setErrorList(errors);
       return;
     }
-
-    setErrorList([]);
-    console.log("Submitted Request:", formData);
+    try {
+      setErrorList([]);
+      const newDocID = await submitMaintenanceRequest(formData);
+        setFormData({
+          clientID: userDataLog.id,
+          clientName: null,
+          contactNumber: null,
+          address: null,
+          issueDescription: null,
+          preferredDate: null,
+          preferredTime: null,
+          technician: null,
+          technicianID: null,
+          lat: null,
+          lng: null,
+          status: "Scheduled",
+        });
+        setErrorList([{
+          type: "success",
+          title: `Request submitted successfully`,
+          message:  `Request submitted successfully`,
+        }]);
+      console.log("Request saved:", newDocID);
+    } catch (error) {
+      // handle error
+        setErrorList([{
+          type: "danger",
+          title: `Error in saving`,
+          message:  `Error in saving`,
+        }]);
+    }
   };
 
   const handleSearch = async (e) => {
@@ -107,7 +141,7 @@ export default function ClientCreateFormsPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-6 bg-white rounded-xl shadow-xl">
+    <div className="my-6 py-6 px-6 mx-10 space-y-6 bg-white border border-gray-200 rounded-xl shadow-xl">
       <form className="space-y-6" onSubmit={handleSubmit}>
         {/* Client Name */}
         <div>
@@ -115,7 +149,7 @@ export default function ClientCreateFormsPage() {
           <input
             type="text"
             name="clientName"
-            value={formData.clientName}
+            value={formData.clientName || ""}
             onChange={handleChange}
             className="w-full mt-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
             placeholder="Hans Burger"
@@ -129,7 +163,7 @@ export default function ClientCreateFormsPage() {
           <input
             type="tel"
             name="contactNumber"
-            value={formData.contactNumber}
+            value={formData.contactNumber || ""}
             onChange={handleChange}
             className="w-full mt-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
             placeholder="0917-123-4567"
@@ -144,7 +178,7 @@ export default function ClientCreateFormsPage() {
             <input
               type="text"
               name="address"
-              value={formData.address}
+              value={formData.address || ""}
               onChange={handleChange}
               className="w-full mt-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
               placeholder="123 Iceberg Lane, Chilltown"
@@ -170,7 +204,7 @@ export default function ClientCreateFormsPage() {
           <label className="block text-sm text-gray-600">Issue Description</label>
           <textarea
             name="issueDescription"
-            value={formData.issueDescription}
+            value={formData.issueDescription || ""}
             onChange={handleChange}
             rows="3"
             className="w-full mt-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
@@ -186,7 +220,7 @@ export default function ClientCreateFormsPage() {
             <input
               type="date"
               name="preferredDate"
-              value={formData.preferredDate}
+              value={formData.preferredDate || ""}
               onChange={handleChange}
               className="w-full mt-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
               required
@@ -199,7 +233,7 @@ export default function ClientCreateFormsPage() {
             <input
               type="time"
               name="preferredTime"
-              value={formData.preferredTime}
+              value={formData.preferredTime || ""}
               onChange={handleChange}
               className="w-full mt-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
               required
@@ -208,7 +242,7 @@ export default function ClientCreateFormsPage() {
         </div>
 
         <div>
-          {errorList.length >= 1 ? <Alert errorList={errorList} type="danger" /> : <></>}
+          {errorList.length >= 1 ? <Alert errorList={errorList} type={errorList[0].type} /> : <></>}
         </div>
 
         <div className="pt-4">

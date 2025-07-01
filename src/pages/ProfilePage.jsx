@@ -19,24 +19,23 @@ import {
   CalendarDaysIcon,
 } from "@heroicons/react/24/outline";
 
-export default function ProfilePage() {
+export default function ProfilePage({userData}) {
   const [isOpen, setIsOpen] = useState(false);
-
-  const [profile, setProfile] = useState({
-    fullName: "Hans Burger",
-    email: "hans@example.com",
-    password: "hashed_password_here",
-    contactNumber: "0917-123-4567",
-    address: "123 Iceberg Lane, Chilltown",
-    role: "client",
-    createdAt: "2025-06-28T10:00:00Z",
-  });
+  const [profile, setProfile] = useState(userData);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProfile((prev) => ({ ...prev, [name]: value }));
   };
+  const formatToISO8601 = (dateInput) => {
+    if (!dateInput) return null;
 
+    const date = dateInput instanceof Date
+      ? dateInput
+      : dateInput.toDate?.() || new Date(dateInput);
+
+    return date.toISOString(); // Returns "YYYY-MM-DDTHH:mm:ss.sssZ"
+  };
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
       <Card className="max-w-3xl mx-auto p-6 shadow-xl rounded-xl">
@@ -69,7 +68,7 @@ export default function ProfilePage() {
           </p>
           <p className="flex items-center gap-2">
             <CalendarDaysIcon className="h-5 w-5" /> Created At:{" "}
-            {new Date(profile.createdAt).toLocaleString()}
+            {new Date(formatToISO8601(profile.createdAt)).toLocaleString()}
           </p>
         </div>
       </Card>
@@ -101,19 +100,19 @@ export default function ProfilePage() {
             value={profile.address}
             onChange={handleChange}
           />
-          <Input
+          {/* <Input
             label="Role"
             name="role"
             value={profile.role}
             onChange={handleChange}
-          />
-          <Input
+          /> */}
+          {/* <Input
             label="Password"
             name="password"
             type="password"
             value={profile.password}
             onChange={handleChange}
-          />
+          /> */}
         </DialogBody>
         <DialogFooter>
           <Button variant="text" onClick={() => setIsOpen(false)} className="mr-2">

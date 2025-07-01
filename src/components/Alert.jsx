@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function Alert({errorList, type="info"}) {
+export default function Alert({errorList, type="success"}) {
   const [visible, setVisible] = useState(true);
 
   const colors = {

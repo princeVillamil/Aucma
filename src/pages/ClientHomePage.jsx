@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import placeHolderClients from "../assets/data/placeHolderClients";
-import FormsTable from "../components/FormsTable";
+import { useEffect, useState } from "react";
+import { getAllSingleUserReq} from "../firebase/firestoreFunctions"
+import FormsTable from "../components/FormsTable"
 import {
   Card,
   CardBody,
@@ -14,32 +14,55 @@ import {
   PencilIcon, TrashIcon
 } from "@heroicons/react/24/outline";
 
-// const stats = [
-//   { icon: ClipboardDocumentListIcon, label: "Total Requests", value: "348" },
-//   { icon: ClockIcon, label: "Pending Requests", value: "29" },
-//   { icon: CheckCircleIcon, label: "Approved Requests", value: "198" },
-//   { icon: CheckBadgeIcon, label: "Completed Requests", value: "112" },
-//   { icon: WrenchScrewdriverIcon, label: "Technicians", value: "14" },
-//   { icon: UserGroupIcon, label: "Clients Registered", value: "589" },
-// ];
 
-const stats = [
-  { icon: ClipboardDocumentListIcon, label: "Total Requests", value: "348" },,
-  { icon: ClockIcon, label: "Pending Requests", value: "29" },
-  { icon: CheckCircleIcon, label: "Approved Requests", value: "198" },
-  { icon: CheckBadgeIcon, label: "Completed Requests", value: "112" },
-];
+function ClientHomePage({userData, role}) {
+  const [userDataLog, setUserDataLog] = useState(userData)
+  const [allRequest, setAllRequest] = useState([])
+  const [statsNum, setStatsNum] = useState({
+    totalRequests: 0,
+    pendingRequests: 0,
+    approvedRequests: 0,
+    completedRequests: 0
+  })
+  const stats = [
+    { icon: ClipboardDocumentListIcon, label: "Total Requests", value: statsNum.totalRequests, statName: "totalRequests" },,
+    { icon: ClockIcon, label: "Pending Requests", value: statsNum.pendingRequests, statName: "pendingRequests" },
+    { icon: CheckCircleIcon, label: "Approved Requests", value: statsNum.approvedRequests, statName: "approvedRequests" },
+    { icon: CheckBadgeIcon, label: "Completed Requests", value: statsNum.completedRequests, statName: "completedRequests" },
+  ];
 
+  useEffect(() => {
+    const fetchRequests = async () => {
+      try {
+        const allRequestData = await getAllSingleUserReq(userDataLog.id);
+        setAllRequest(allRequestData);
+      } catch (error) {
+        console.error("Failed to fetch maintenance requests", error);
+      }
+    };
+    fetchRequests();
+  }, []);
+  useEffect(()=>{
+    const handleStatsNum = (allRequest) => {
+      const totalRequests = allRequest.length;
+      const pendingRequests = allRequest.filter(req => req.status === "Pending").length;
+      const approvedRequests = allRequest.filter(req => req.status === "Scheduled" || req.status === "In Progress").length;
+      const completedRequests = allRequest.filter(req => req.status === "Completed").length;
 
-
-function ClientHomePage({userData}) {
-    console.log(userData)
-  const [profiles, setProfiles] = useState(placeHolderClients);
-
+      setStatsNum({
+        totalRequests,
+        pendingRequests,
+        approvedRequests,
+        completedRequests,
+      });
+    };
+    handleStatsNum(allRequest)
+  },[allRequest])
+  
   return (
     
-    <div className="py-6 px-10 space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="">
+      <div className="py-6 px-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map(({ icon: Icon, label, value }) => (
           <Card key={label} className="shadow">
             <CardBody className="flex items-center gap-4">
@@ -57,7 +80,8 @@ function ClientHomePage({userData}) {
         ))}
       </div>
 
-        <FormsTable requests={profiles} type="client"/>
+      {/* Client */}
+      <FormsTable requests={allRequest} type="client"/>
 
     </div>
     
@@ -65,3 +89,5 @@ function ClientHomePage({userData}) {
 }
 
 export default ClientHomePage
+
+        // <FormsTable requests={allRequest} type="client"/>

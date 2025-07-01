@@ -4,10 +4,10 @@ import { Input, Button } from "@material-tailwind/react";
 import { useNavigate } from "react-router-dom";
 
 const statusColors = {
-  Approved: "bg-green-100 text-green-600",
-  Pending: "bg-orange-100 text-orange-600",
-  Denied: "bg-red-100 text-red-600",
-  Expired: "bg-gray-100 text-gray-500",
+  Completed: "bg-green-100 text-green-600",
+  "Pending": "bg-yellow-100 text-yellow-600",
+  Cancelled: "bg-red-100 text-red-600",
+  Scheduled: "bg-gray-100 text-gray-500",
   "In Progress": "bg-blue-100 text-blue-600",
 };
 
@@ -18,11 +18,14 @@ export default function FormsTable({ requests, type="admin" }) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const filteredRequests = requests.filter(
-    (req) =>
-      req.clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      req.contactNumber.includes(searchQuery) ||
-      req.address.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredRequests = requests
+    .filter((req) => req.status !== "Cancelled")
+    .filter(
+      (req) =>
+        req.clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        req.contactNumber.includes(searchQuery) ||
+        req.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        req.status.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const sortedRequests = [...filteredRequests].sort((a, b) => {
@@ -40,7 +43,9 @@ export default function FormsTable({ requests, type="admin" }) {
   const handleEdit = (form) => {
     navigate(`/${type}/dashboard/forms/edit`, { state: { formData: form } });
   };
-
+  const handleCancel = (form) => {
+    navigate(`/${type}/dashboard/forms/cancel`, { state: { formData: form } });
+  };
   const convertTo12HourFormat = (time24) => {
     const [hourStr, minute] = time24.split(":");
     let hour = parseInt(hourStr, 10);
@@ -49,11 +54,20 @@ export default function FormsTable({ requests, type="admin" }) {
     return `${hour}:${minute} ${ampm}`;
   };
 
+  const idShorten = (id) => {
+    if (id.length <= 6) return id;
+    return `${id.slice(0, 6)}...`;
+  };
+  const handleCopy = (id) => {
+    navigator.clipboard.writeText(id).then(() => {
+      console.log("Copied to clipboard!");
+    });
+  };
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white p-6">
+    <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-xl bg-white my-6 py-6 px-6 mx-10 space-y-6">
       <div className="mb-4 flex justify-between items-center w-80">
         <Input
-          label="Search client, contact or address"
+          label="Search client, status or address"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-80 shadow-xl !border-t-blue-gray-200"
@@ -80,11 +94,13 @@ export default function FormsTable({ requests, type="admin" }) {
         <tbody>
           {paginatedRequests.map((req, idx) => (
             <tr key={idx} className="border-t border-gray-200">
-              <td className="px-4 py-4 font-medium text-gray-900">{req.requestID}</td>
+            <td className="px-4 py-4 font-medium text-gray-900 cursor-pointer hover:underline" onClick={() => handleCopy(req.id)} title="Click to copy">
+              {idShorten(req.id)}
+            </td>
               <td className="px-4 py-4">{req.clientName}</td>
               <td className="px-4 py-4">{req.contactNumber}</td>
               <td className="px-4 py-4">{req.address}</td>
-              <td className="px-4 py-4">{req.technician}</td>
+              <td className="px-4 py-4">{req.technician == null ? "Pending" : req.technician}</td>
               <td className="px-4 py-4">
                 {req.preferredDate} <br /> {convertTo12HourFormat(req.preferredTime)}
               </td>
@@ -103,7 +119,7 @@ export default function FormsTable({ requests, type="admin" }) {
                     <PencilIcon className="h-5 w-5" />
                   </button>
                   <button className="text-red-900 hover:text-red-600">
-                    <TrashIcon className="h-5 w-5" />
+                    <TrashIcon onClick={() => handleCancel(req)} className="h-5 w-5" />
                   </button>
                 </div>
               </td>

@@ -1,22 +1,24 @@
 
 import React, { useState } from "react";
 import Alert from "../components/Alert";
+import {submitMaintenanceRequest} from "../firebase/firestoreFunctions"
 
-export default function CreateFormsPage() {
+export default function CreateFormsPage({userData, technicianList}) {
+  // console.log(userData, "CreateFormsPage")
+
   const [errorList, setErrorList] = useState([])
-    // info: "text-blue-600 border-blue-700 bg-blue-50",
-    // danger: "text-red-600 border-red-700 bg-red-50",
-    // success: "text-green-600 border-green-700 bg-green-50",
-    // warning: "text-yellow-600 border-yellow-700 bg-yellow-50",
-    // neutral: "text-gray-600 border-gray-700 bg-gray-50",
+  const [userDataLog, setUserDataLog] = useState(userData)
+  console.log(userDataLog,"userDataLog")
   const [formData, setFormData] = useState({
-    clientName: "",
-    contactNumber: "",
-    address: "",
-    issueDescription: "",
-    preferredDate: "",
-    preferredTime: "",
-    technician: "",
+    clientID: userDataLog.id,
+    clientName: null,
+    contactNumber: null,
+    address: null,
+    issueDescription: null,
+    preferredDate: null,
+    preferredTime: null,
+    technician: null,
+    technicianID: null,
     lat: null,
     lng: null,
     status: "Scheduled",
@@ -24,10 +26,25 @@ export default function CreateFormsPage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === "technician") {
+      const selectedTech = technicianList.find((tech) => tech.id === value);
+      if (selectedTech) {
+        setFormData((prev) => ({
+          ...prev,
+          technician: selectedTech.fullName,
+          technicianID: selectedTech.id,
+        }));
+      }
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
+  
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
     const errors = [];
     const requiredFields = [
@@ -60,9 +77,37 @@ export default function CreateFormsPage() {
       setErrorList(errors);
       return;
     }
-
-    setErrorList([]);
-    console.log("Submitted Request:", formData);
+    try {
+      setErrorList([]);
+      const newDocID = await submitMaintenanceRequest(formData);
+        setFormData({
+          clientID: userDataLog.id,
+          clientName: null,
+          contactNumber: null,
+          address: null,
+          issueDescription: null,
+          preferredDate: null,
+          preferredTime: null,
+          technician: null,
+          technicianID: null,
+          lat: null,
+          lng: null,
+          status: "Scheduled",
+        });
+        setErrorList([{
+          type: "success",
+          title: `Request submitted successfully`,
+          message:  `Request submitted successfully`,
+        }]);
+      console.log("Request saved:", newDocID);
+    } catch (error) {
+      // handle error
+        setErrorList([{
+          type: "danger",
+          title: `Error in saving`,
+          message:  `Error in saving`,
+        }]);
+    }
   };
 
   const handleSearch = async (e) => {
@@ -108,7 +153,7 @@ export default function CreateFormsPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-6 bg-white rounded-xl shadow-xl">
+    <div className="my-6 py-6 px-6 mx-10 space-y-6 bg-white border border-gray-200 rounded-xl shadow-xl">
       <form className="space-y-6" onSubmit={handleSubmit}>
         {/* Client Name */}
         <div>
@@ -116,7 +161,7 @@ export default function CreateFormsPage() {
           <input
             type="text"
             name="clientName"
-            value={formData.clientName}
+            value={formData.clientName || ""}
             onChange={handleChange}
             className="w-full mt-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
             placeholder="Hans Burger"
@@ -130,7 +175,7 @@ export default function CreateFormsPage() {
           <input
             type="tel"
             name="contactNumber"
-            value={formData.contactNumber}
+            value={formData.contactNumber || ""}
             onChange={handleChange}
             className="w-full mt-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
             placeholder="0917-123-4567"
@@ -145,7 +190,7 @@ export default function CreateFormsPage() {
             <input
               type="text"
               name="address"
-              value={formData.address}
+              value={formData.address || ""}
               onChange={handleChange}
               className="w-full mt-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
               placeholder="123 Iceberg Lane, Chilltown"
@@ -171,7 +216,7 @@ export default function CreateFormsPage() {
           <label className="block text-sm text-gray-600">Issue Description</label>
           <textarea
             name="issueDescription"
-            value={formData.issueDescription}
+            value={formData.issueDescription || ""}
             onChange={handleChange}
             rows="3"
             className="w-full mt-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
@@ -187,7 +232,7 @@ export default function CreateFormsPage() {
             <input
               type="date"
               name="preferredDate"
-              value={formData.preferredDate}
+              value={formData.preferredDate || ""}
               onChange={handleChange}
               className="w-full mt-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
               required
@@ -200,7 +245,7 @@ export default function CreateFormsPage() {
             <input
               type="time"
               name="preferredTime"
-              value={formData.preferredTime}
+              value={formData.preferredTime || ""}
               onChange={handleChange}
               className="w-full mt-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
               required
@@ -210,23 +255,39 @@ export default function CreateFormsPage() {
 
         {/* Technician */}
         <div>
+          <label className="block text-sm text-gray-600">Technician</label>
+            <select
+              name="technician"
+              value={formData.technicianID || ""}
+              onChange={handleChange}
+              className="w-full mt-1 px-4 py-2 border rounded-md"
+            >
+              <option value="">-- Select Technician --</option>
+              {technicianList.map((tech) => (
+                <option key={tech.id} value={tech.id}>
+                  {tech.fullName}
+                </option>
+              ))}
+            </select>
+        </div>
+        {/* <div>
           <label className="block text-sm text-gray-600">Assign Technician</label>
           <input
             type="text"
             name="technician"
-            value={formData.technician}
+            value={formData.technician || ""}
             onChange={handleChange}
             className="w-full mt-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
             placeholder="Michael Cruz"
           />
-        </div>
+        </div> */}
 
         {/* Status Select */}
         <div>
           <label className="block text-sm text-gray-600">Status</label>
           <select
             name="status"
-            value={formData.status}
+            value={formData.status || ""}
             onChange={handleChange}
             className="w-full mt-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
           >
@@ -234,12 +295,11 @@ export default function CreateFormsPage() {
             <option>In Progress</option>
             <option>Completed</option>
             <option>Pending</option>
-            <option>Cancelled</option>
           </select>
         </div>
 
         <div>
-          {errorList.length >= 1 ? <Alert errorList={errorList} type="danger" /> : <></>}
+          {errorList.length >= 1 ? <Alert errorList={errorList} type={errorList[0].type} /> : <></>}
         </div>
 
         <div className="pt-4">

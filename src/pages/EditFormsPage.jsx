@@ -1,73 +1,98 @@
 
-import React, { useState } from "react";
+import { useState } from "react";
 import Alert from "../components/Alert";
 import { useLocation } from "react-router-dom";
+import {updateMaintenanceRequest} from "../firebase/firestoreFunctions"
 
-
-export default function EditFormsPage({type="admin"}) {
+export default function EditFormsPage({type="admin", technicianList}) {
   const location = useLocation();
-  console.log(location.state.formData)
   const [reqData, setReqData] = useState(location.state.formData)
+  console.log(reqData, "Edit Form")
   const [errorList, setErrorList] = useState([])    
-  // info: "text-blue-600 border-blue-700 bg-blue-50",
-  // danger: "text-red-600 border-red-700 bg-red-50",
-  // success: "text-green-600 border-green-700 bg-green-50",
-  // warning: "text-yellow-600 border-yellow-700 bg-yellow-50",
-  // neutral: "text-gray-600 border-gray-700 bg-gray-50",
   const [formData, setFormData] = useState({
+      clientID: reqData.clientID,
       clientName: reqData.clientName,
       contactNumber: reqData.contactNumber,
-      address: reqData.clientAddress,
+      address: reqData.address,
       issueDescription: reqData.issueDescription,
       preferredDate: reqData.preferredDate,
       preferredTime: reqData.preferredTime,
       technician: reqData.technician,
+      technicianID: reqData.technicianID,
       lat: reqData.lat,
       lng: reqData.lng,
       status: reqData.status,
   });
 
   const handleChange = (e) => {
-      const { name, value } = e.target;
-      setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value } = e.target;
+    if (name === "technician") {
+      const selectedTech = technicianList.find((tech) => tech.id === value);
+      if (selectedTech) {
+        setFormData((prev) => ({
+          ...prev,
+          technician: selectedTech.fullName,
+          technicianID: selectedTech.id,
+        }));
+      }
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
-
-  const handleSubmit = (e) => {
-      e.preventDefault();
-      const errors = [];
-      const requiredFields = [
-          "clientName",
-          "contactNumber",
-          "address",
-          "issueDescription",
-          "preferredDate",
-          "preferredTime",
-          "technician",
-          "lat",
-          "lng",
-          "status"
-      ];
-      requiredFields.forEach((field) => {
+  const handleSubmit = async(e) => {
+    e.preventDefault();
+    const errors = [];
+    const requiredFields = [
+      "clientName",
+      "contactNumber",
+      "address",
+      "issueDescription",
+      "preferredDate",
+      "preferredTime",
+      ...(type !== "client" ? ["technician"] : []),
+      "lat",
+      "lng",
+      "status"
+    ];
+    if(type=="client")       setFormData((prev) => ({ ...prev, "technicianID": null,}));
+    requiredFields.forEach((field) => {
       if (
-          formData[field] === "" ||
-          formData[field] === null ||
-          formData[field] === undefined
+        formData[field] === "" ||
+        formData[field] === null ||
+        formData[field] === undefined
       ) {
-          errors.push({
+        errors.push({
           type: "danger",
           title: `${field} is required.`,
           message: `Please fill in the ${field.replace(/([A-Z])/g, " $1")}.`,
-          });
+        });
       }
-      });
+    });
 
-      if (errors.length > 0) {
+    if (errors.length > 0) {
       setErrorList(errors);
-          return;
-      }
-
+      return;
+    }
+    try {
       setErrorList([]);
-      console.log("Submitted Request:", formData); //Function to update Req
+      const newDocID = await updateMaintenanceRequest("updatedMaintenanceRequests",reqData.id,formData);
+        setErrorList([{
+          type: "success",
+          title: `Edit submitted successfully`,
+          message:  `Edit submitted successfully`,
+        }]);
+      console.log("Request saved:", newDocID);
+    } catch (error) {
+      // handle error
+        setErrorList([{
+          type: "danger",
+          title: `Error in saving`,
+          message:  `Error in saving`,
+        }]);
+    }
   };
 
   const handleSearch = async (e) => {
@@ -88,6 +113,7 @@ export default function EditFormsPage({type="admin"}) {
       if (data && data.length > 0) {
           const { lat, lon } = data[0];
           setFormData((prev) => ({...prev, lat: parseFloat(lat), lng: parseFloat(lon),}));
+          setErrorList([])
       } else {
           setFormData((prev) => ({...prev, lat: null, lng: null,}));
           setErrorList((prev) => {
@@ -113,7 +139,7 @@ export default function EditFormsPage({type="admin"}) {
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-6 bg-white rounded-xl shadow-xl">
+    <div className="my-6 py-6 px-6 mx-10 space-y-6 bg-white border border-gray-200 rounded-xl shadow-xl">
       <form className="space-y-6" onSubmit={handleSubmit}>
         {/* Client Name */}
         <div>
@@ -216,15 +242,19 @@ export default function EditFormsPage({type="admin"}) {
         {type === "admin" ? (
           <>
             <div>
-              <label className="block text-sm text-gray-600">Assign Technician</label>
-              <input
-                type="text"
-                name="technician"
-                value={formData.technician}
-                onChange={handleChange}
-                className="w-full mt-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
-                placeholder="Michael Cruz"
-              />
+              <label className="block text-sm text-gray-600">Technician</label>
+                <select
+                  name="technician"
+                  value={formData.technicianID || ""}
+                  onChange={handleChange}
+                  className="w-full mt-1 px-4 py-2 border rounded-md"
+                >
+                  {technicianList.map((tech) => (
+                    <option key={tech.id} value={tech.id}>
+                      {tech.fullName}
+                    </option>
+                  ))}
+                </select>
             </div>
             <div>
               <label className="block text-sm text-gray-600">Status</label>
@@ -238,14 +268,13 @@ export default function EditFormsPage({type="admin"}) {
                 <option>In Progress</option>
                 <option>Completed</option>
                 <option>Pending</option>
-                <option>Cancelled</option>
               </select>
             </div>
           </>
         ) : null}
 
         <div>
-          {errorList.length >= 1 ? <Alert errorList={errorList} type="danger" /> : <></>}
+          {errorList.length >= 1 ? <Alert errorList={errorList} type={errorList[0].type} /> : <></>}
         </div>
 
         <div className="pt-4">

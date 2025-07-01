@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { placeHolderUsers } from "../assets/data/placeHolderUsers";
+import { getAllUsers, getAllMaintenanceRequest} from "../firebase/firestoreFunctions"
 import UserTable from "../components/UserTable";
 import {
   Card,
@@ -14,55 +15,61 @@ import {
   PencilIcon, TrashIcon
 } from "@heroicons/react/24/outline";
 
-// const stats = [
-//   { icon: ClipboardDocumentListIcon, label: "Total Requests", value: "348" },
-//   { icon: ClockIcon, label: "Pending Requests", value: "29" },
-//   { icon: CheckCircleIcon, label: "Approved Requests", value: "198" },
-//   { icon: CheckBadgeIcon, label: "Completed Requests", value: "112" },
-//   { icon: WrenchScrewdriverIcon, label: "Technicians", value: "14" },
-//   { icon: UserGroupIcon, label: "Clients Registered", value: "589" },
-// ];
-
-const stats = [
-  { icon: ClipboardDocumentListIcon, label: "Total Requests", value: "348" },,
-  { icon: ClockIcon, label: "Pending Requests", value: "29" },
-  { icon: CheckCircleIcon, label: "Approved Requests", value: "198" },
-  { icon: CheckBadgeIcon, label: "Completed Requests", value: "112" },
-];
-
 
 
 function HomePage() {
-  const [profiles, setProfiles] = useState(placeHolderUsers);
+
+  const [profiles, setProfiles] = useState([]);
+  const [allRequest, setAllRequest] = useState([])
   const [allClients, setAllClients] = useState([]);
   const [allAdmin, setAllAdmin] = useState([]);
+  const [statsNum, setStatsNum] = useState({
+    totalRequests: 0,
+    pendingRequests: 0,
+    approvedRequests: 0,
+    completedRequests: 0
+  })
+  const stats = [
+    { icon: ClipboardDocumentListIcon, label: "Total Requests", value: statsNum.totalRequests, statName: "totalRequests" },,
+    { icon: ClockIcon, label: "Pending Requests", value: statsNum.pendingRequests, statName: "pendingRequests" },
+    { icon: CheckCircleIcon, label: "Approved Requests", value: statsNum.approvedRequests, statName: "approvedRequests" },
+    { icon: CheckBadgeIcon, label: "Completed Requests", value: statsNum.completedRequests, statName: "completedRequests" },
+  ];
 
+  useEffect(() => {
+    const fetchRequests = async () => {
+      try {
+        const data = await getAllUsers();
+        setProfiles(data);
+        const allRequestData = await getAllMaintenanceRequest();
+        setAllRequest(allRequestData);
+      } catch (error) {
+        console.error("Failed to fetch maintenance requests", error);
+      }
+    };
+    fetchRequests();
+  }, []);
   useEffect(() => {
     setAllClients(profiles.filter((user) => user.role === "client"));
     setAllAdmin(profiles.filter((user) => user.role === "admin"));
   }, [profiles]);
-  // const [allClients, setAllCients] = useState(profiles.filter((user) => user.role === "client"))
-  // const [allAdmin, setAllAdmin] = useState(profiles.filter((user) => user.role === "admin"))
-  // profiles.filter((user) => console.log(user.role === "admin"))
-  // useEffect(() => {
-  //   setAllAdmin(profiles.filter((user) => user.role === "admin"));
-  //   setAllClients(profiles.filter((user) => user.role === "client"));
-  // }, [profiles]);
+  useEffect(()=>{
+    const handleStatsNum = (allRequest) => {
+      const totalRequests = allRequest.length;
+      const pendingRequests = allRequest.filter(req => req.status === "Pending").length;
+      const approvedRequests = allRequest.filter(req => req.status === "Scheduled" || req.status === "In Progress").length;
+      const completedRequests = allRequest.filter(req => req.status === "Completed").length;
 
+      setStatsNum({
+        totalRequests,
+        pendingRequests,
+        approvedRequests,
+        completedRequests,
+      });
+    };
+    handleStatsNum(allRequest)
+  },[allRequest])
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-
-  const totalPages = Math.ceil(profiles.length / itemsPerPage);
-  const paginatedProfiles = profiles.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  const formatDate = (dateStr) => {
-    const options = { year: "numeric", month: "short", day: "numeric" };
-    return new Date(dateStr).toLocaleDateString(undefined, options);
-  };
   return (
     
     <div className="py-6 px-10 space-y-6">
@@ -85,10 +92,10 @@ function HomePage() {
       </div>
 
       {/* Client */}
-      <UserTable title={"Client Users"} data={allClients} type="technician"/>
+      <UserTable title={"Client Users"} data={allClients} setProfiles={setProfiles} type="technician"/>
 
       {/* Admin */}
-      <UserTable title={"Admin Users"} data={allAdmin} type="address"/>
+      <UserTable title={"Admin Users"} data={allAdmin} setProfiles={setProfiles} type="address"/>
 
     </div>
     
