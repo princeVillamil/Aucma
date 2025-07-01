@@ -30,7 +30,7 @@ function App() {
       {/* Auth */}
       <Route path="/auth" element={<AuthPage />} />
       <Route path="/verification" element={<VerificationPage />} />
-      <Route path="/" element={<HeroPage />} />
+      <Route path="/" element={<AuthPage />} />
 
       {/* Client Routes */}
       <Route
