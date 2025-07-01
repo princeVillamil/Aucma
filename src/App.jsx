@@ -76,7 +76,7 @@ function App() {
       <Route
         path="client/dashboard/profile"
         element={
-          <Layout currentPage="Profile">
+          <Layout currentPage="Profile"  headerType="client">
             <ProtectedRoute role="client">
               <ProfilePage />
             </ProtectedRoute>
