@@ -285,7 +285,7 @@ function ClientPieCharts({ clientList }) {
                 />
                 <button
                   onClick={handleExportAsPDF}
-                  className="absolute bottom-2 right-2 p-2 text-blue-600 hover:text-blue-800"
+                  className="absolute top-2 left-2 p-2 text-blue-600 hover:text-blue-800"
                   title="Download PDF"
                 >
                   <svg
